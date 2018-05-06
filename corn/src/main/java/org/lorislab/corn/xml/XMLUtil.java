@@ -8,6 +8,9 @@ package org.lorislab.corn.xml;
 import java.io.File;
 import java.io.StringWriter;
 import java.io.Writer;
+import javax.wsdl.Definition;
+import javax.wsdl.factory.WSDLFactory;
+import javax.wsdl.xml.WSDLReader;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
@@ -43,6 +46,23 @@ public class XMLUtil {
         DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
         Document doc = docBuilder.newDocument();
         
+//        WSDLFactory factory = WSDLFactory.newInstance();
+//        WSDLReader reader = factory.newWSDLReader();
+//        reader.setFeature("javax.wsdl.importDocuments", false);
+//        Definition definition = reader.readWSDL(resource);
+//        
+//        if (definition.getTypes() != null) {
+//            for (Object o : definition.getTypes().getExtensibilityElements()) {
+//                if (o instanceof javax.wsdl.extensions.schema.Schema) {
+//                    Element ele = ((javax.wsdl.extensions.schema.Schema) o).getElement();
+//                    if ("schema".equals(ele.getLocalName())) {
+//                        Node newNode = doc.importNode(ele, true);
+//                        doc.appendChild(newNode);                 
+//                    }
+//                }
+//            }
+//        }
+
         File file = new File(resource);
         JAXBContext jaxbContext = JAXBContext.newInstance(TDefinitions.class);
         Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();

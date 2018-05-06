@@ -1,6 +1,6 @@
 package org.lorislab.corn.xml.validator;
 
-import java.io.StringReader;
+import java.io.ByteArrayInputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,12 +10,16 @@ import java.util.List;
 import javax.wsdl.Definition;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
+import javax.xml.soap.MessageFactory;
+import javax.xml.soap.MimeHeaders;
+import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
@@ -27,14 +31,36 @@ public class XmlValidator {
 
     public static void validate(Path path, List<String> resources) {
         try {
-            Schema schema = createSchema(resources);
+            boolean wsdl = false;
+            List<Source> sources = new ArrayList<>();
+            for (String item : resources) {
+                if (item.endsWith(".wsdl")) {
+                    wsdl = true;
+                    Source source = loadWsdlSource(item);
+                    if (source != null) {
+                        sources.add(source);                        
+                    }
+                } else {
+                    sources.add(new StreamSource(Service.class.getResourceAsStream(item), item));
+                }
+            }
+            Schema schema = SF.newSchema(sources.toArray(new Source[sources.size()]));
             Validator validator = schema.newValidator();
-            String xml = new String(Files.readAllBytes(path));
-//        if (handler != null) {
+            
+            Source source;
+            if (wsdl) {
+                MessageFactory mf = MessageFactory.newInstance();
+                SOAPMessage soapMessage = mf.createMessage(new MimeHeaders(), new ByteArrayInputStream(Files.readAllBytes(path)));            
+                Document doc = soapMessage.getSOAPBody().extractContentAsDocument();
+                source = new DOMSource(doc);
+            } else {
+//                String xml = new String(Files.readAllBytes(path));
+//                StringReader reader = new StringReader(xml);
+                source = new StreamSource(path.toFile());
+            }
+            
             validator.setErrorHandler(new XmlErrorHandler(path));
-//        }
-            StringReader reader = new StringReader(xml);
-            validator.validate(new StreamSource(reader));
+            validator.validate(source);
         } catch (Exception ex) {
             throw new RuntimeException("Error validate XML " + path, ex);
         }
@@ -42,21 +68,6 @@ public class XmlValidator {
 
     public static Schema createSchema(String resource) throws Exception {
         return SF.newSchema(new URL(resource));
-    }
-
-    public static Schema createSchema(List<String> resources) throws Exception {
-        List<Source> sources = new ArrayList<>();
-        for (String item : resources) {
-            if (item.endsWith(".wsdl")) {
-                Source source = loadWsdlSource(item);
-                if (source != null) {
-                    sources.add(source);
-                }
-            } else {
-                sources.add(new StreamSource(Service.class.getResourceAsStream(item), item));
-            }
-        }
-        return SF.newSchema(sources.toArray(new Source[sources.size()]));
     }
 
     private static Source loadWsdlSource(String wsdl) throws Exception {
