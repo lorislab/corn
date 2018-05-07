@@ -111,7 +111,7 @@ public class Main {
                             csv.generate(expression);
 
                             Path path = CSVWritter.writeToFile(parent, csv);
-                            LOGGER.info(prefix + SUBLEVEL_PREFIX + "file:" + path);
+                            LOGGER.info(prefix + SUBLEVEL_PREFIX + "file :" + path);
                             
                         } else if (out.xml != null) {
                             XmlDefinition xmlDef = def.xml.get(out.definition);
@@ -121,7 +121,7 @@ public class Main {
                             xml.generate(expression);
 
                             Path path = XmlWritter.writeToFile(parent, xml);
-                            LOGGER.info(prefix + SUBLEVEL_PREFIX + "file: " + path);
+                            LOGGER.info(prefix + SUBLEVEL_PREFIX + "file : " + path);
                             
                             if (out.xml.validate) {
                                 XmlValidator.validate(path, xmlDef.xsds);
@@ -129,7 +129,7 @@ public class Main {
                         }
                                                 
                         if (out.list != null && !out.list.isEmpty()) {
-                            LOGGER.info(prefix + SUBLEVEL_PREFIX + "items: [");
+                            LOGGER.info(prefix + SUBLEVEL_PREFIX + "items : [");
                             generate(prefix + LEVEL_PREFIX, parent, expression, def, out.list);
                             LOGGER.info(prefix + SUBLEVEL_PREFIX + "]");
                         }                        
