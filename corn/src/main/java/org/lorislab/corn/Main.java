@@ -22,9 +22,17 @@ import org.lorislab.corn.model.XmlDefinition;
 import org.lorislab.corn.xml.XmlObject;
 import org.lorislab.corn.xml.XmlWritter;
 import org.lorislab.corn.xml.validator.XmlValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Main {
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
+    private static final String LEVEL_PREFIX = "    ";
+    
+    private static final String SUBLEVEL_PREFIX = "  ";
+    
     public static void main(String[] args) throws Exception {
         Expressions expression = new Expressions();
         expression.addBean("SYS", new SystemBean());
@@ -44,25 +52,32 @@ public class Main {
         for (String name: prop.stringPropertyNames()) {
             inputs.put(name, prop.getProperty(name));
         }
-
+        
         for (String key : gen.input) {
             if (!inputs.containsKey(key)) {
                 throw new RuntimeException("Missing the input parameter: " + key);
-            }
+            }            
         }
+        
+        LOGGER.info("Inputs {");        
         for (Entry<String, Object> e : inputs.entrySet()) {
             expression.addVariableValue(e.getKey(), e.getValue());
+            LOGGER.info("  " + e.getKey() + " : " + e.getValue());
         }
-
+        LOGGER.info("}");
+        
+        LOGGER.info("Variables {");        
         for (Entry<String, Object> e : gen.variable.entrySet()) {
             Object value = e.getValue();
             if (value instanceof String) {
                 value = expression.evaluateAllValueExpressions((String) value);
             }
+            LOGGER.info("  " + e.getKey() + " : " + value);
             expression.addVariableValue(e.getKey(), value);
         }
+        LOGGER.info("}");
 
-        generate(parent, expression, def, gen.list);
+        generate("", parent, expression, def, gen.list);
     }
 
     private static int number(Expressions expression, String value, String defaultValue) {
@@ -77,7 +92,7 @@ public class Main {
         return defaultValue;
     }
 
-    private static void generate(Path parent, Expressions expression, DataDefinition def, List<DataGeneratorList> data) {
+    private static void generate(String prefix, Path parent, Expressions expression, DataDefinition def, List<DataGeneratorList> data) {
         for (DataGeneratorList list : data) {
             int size = number(expression, list.size, "1");
             for (int i = 0; i < size; i++) {
@@ -87,7 +102,8 @@ public class Main {
 
                     if (precondition(expression, out.precondition, true)) {
 
-                        if (out.csv != null) {
+                        LOGGER.info(prefix + out.name + " {" );
+                        if (out.csv != null) {                            
                             CsvDefinition csvDef = def.csv.get(out.definition);
                             CSVObject csv = new CSVObject(out, csvDef);
 
@@ -95,6 +111,7 @@ public class Main {
                             csv.generate(expression);
 
                             Path path = CSVWritter.writeToFile(parent, csv);
+                            LOGGER.info(prefix + SUBLEVEL_PREFIX + "file:" + path);
                             
                         } else if (out.xml != null) {
                             XmlDefinition xmlDef = def.xml.get(out.definition);
@@ -104,15 +121,19 @@ public class Main {
                             xml.generate(expression);
 
                             Path path = XmlWritter.writeToFile(parent, xml);
-
+                            LOGGER.info(prefix + SUBLEVEL_PREFIX + "file: " + path);
+                            
                             if (out.xml.validate) {
                                 XmlValidator.validate(path, xmlDef.xsds);
                             }
                         }
-                        
+                                                
                         if (out.list != null && !out.list.isEmpty()) {
-                            generate(parent, expression, def, out.list);
+                            LOGGER.info(prefix + SUBLEVEL_PREFIX + "items: [");
+                            generate(prefix + LEVEL_PREFIX, parent, expression, def, out.list);
+                            LOGGER.info(prefix + SUBLEVEL_PREFIX + "]");
                         }                        
+                        LOGGER.info(prefix + "}" );                        
                     }
                 }
 

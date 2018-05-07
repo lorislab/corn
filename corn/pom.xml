@@ -15,6 +15,10 @@
     
     <dependencies>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.el</artifactId>
         </dependency>
@@ -39,40 +43,5 @@
             <artifactId>wsdl4j</artifactId>
         </dependency>
     </dependencies>
-    
-    <profiles>
-        <profile>
-            <id>wsdl</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.cxf</groupId>
-                        <artifactId>cxf-xjc-plugin</artifactId>
-                        <configuration>
-                            <sourceRoot>src/main/java</sourceRoot>
-                            <schemaDirectory>src/main/resources/xsd</schemaDirectory>
-                            <defaultOptions>
-                                <noAddressBinding>true</noAddressBinding>
-                            </defaultOptions>
-                            <xsdOptions>
-                                <xsdOption>
-                                    <xsd>src/main/resources/xsd/wsdl.xsd</xsd>
-                                    <packagename>org.lorislab.corn.wsdl</packagename>
-                                </xsdOption>
-                            </xsdOptions>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>generate-sources</id>
-                                <phase>generate-sources</phase>
-                                <goals>
-                                    <goal>xsdtojava</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>        
-        </profile>        
-    </profiles>
+      
 </project>

@@ -39,9 +39,9 @@ public class XMLUtil {
 
     public static String wsdl2xsd(String resource) throws Exception {
         String result = resource + ".xsd";
-        DocumentBuilderFactory docFactory2 = DocumentBuilderFactory.newInstance();
-        DocumentBuilder docBuilder2 = docFactory2.newDocumentBuilder();
-        Document doc2 = docBuilder2.newDocument();
+        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+        Document doc = docBuilder.newDocument();
 
         WSDLFactory factory = WSDLFactory.newInstance();
         WSDLReader reader = factory.newWSDLReader();
@@ -53,8 +53,8 @@ public class XMLUtil {
             for (Object o : definition.getTypes().getExtensibilityElements()) {
                 if (o instanceof javax.wsdl.extensions.schema.Schema) {
                     Element ele = ((javax.wsdl.extensions.schema.Schema) o).getElement();
-                    Node newNode = doc2.importNode(ele, true);
-                    doc2.appendChild(newNode);
+                    Node newNode = doc.importNode(ele, true);
+                    doc.appendChild(newNode);
                 }
             }
         }
@@ -63,12 +63,12 @@ public class XMLUtil {
             for (Entry<String, String> e : ns.entrySet()) {
                 if (e.getKey() != null && !e.getKey().isEmpty()) {
 //                    System.out.println(e.getKey() + " -> " + e.getValue());
-                    doc2.getDocumentElement().setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, "xmlns:" + e.getKey(), e.getValue());
+                    doc.getDocumentElement().setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, "xmlns:" + e.getKey(), e.getValue());
                 }
             }
         }
 
-        writeToFile(doc2, new File(result));
+        writeToFile(doc, new File(result));
         return result;
     }
 
