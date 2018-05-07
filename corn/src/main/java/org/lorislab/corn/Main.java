@@ -22,12 +22,8 @@ import org.lorislab.corn.model.XmlDefinition;
 import org.lorislab.corn.xml.XmlObject;
 import org.lorislab.corn.xml.XmlWritter;
 import org.lorislab.corn.xml.validator.XmlValidator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class Main {
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     private static final String LEVEL_PREFIX = "    ";
     
@@ -59,23 +55,23 @@ public class Main {
             }            
         }
         
-        LOGGER.info("Inputs {");        
+        System.out.println("Inputs {");        
         for (Entry<String, Object> e : inputs.entrySet()) {
             expression.addVariableValue(e.getKey(), e.getValue());
-            LOGGER.info("  " + e.getKey() + " : " + e.getValue());
+            System.out.println("  " + e.getKey() + " : " + e.getValue());
         }
-        LOGGER.info("}");
+        System.out.println("}");
         
-        LOGGER.info("Variables {");        
+        System.out.println("Variables {");        
         for (Entry<String, Object> e : gen.variable.entrySet()) {
             Object value = e.getValue();
             if (value instanceof String) {
                 value = expression.evaluateAllValueExpressions((String) value);
             }
-            LOGGER.info("  " + e.getKey() + " : " + value);
+            System.out.println("  " + e.getKey() + " : " + value);
             expression.addVariableValue(e.getKey(), value);
         }
-        LOGGER.info("}");
+        System.out.println("}");
 
         generate("", parent, expression, def, gen.list);
     }
@@ -102,7 +98,7 @@ public class Main {
 
                     if (precondition(expression, out.precondition, true)) {
 
-                        LOGGER.info(prefix + out.name + " {" );
+                        System.out.println(prefix + out.name + " {" );
                         if (out.csv != null) {                            
                             CsvDefinition csvDef = def.csv.get(out.definition);
                             CSVObject csv = new CSVObject(out, csvDef);
@@ -111,7 +107,7 @@ public class Main {
                             csv.generate(expression);
 
                             Path path = CSVWritter.writeToFile(parent, csv);
-                            LOGGER.info(prefix + SUBLEVEL_PREFIX + "file :" + path);
+                            System.out.println(prefix + SUBLEVEL_PREFIX + "file :" + path);
                             
                         } else if (out.xml != null) {
                             XmlDefinition xmlDef = def.xml.get(out.definition);
@@ -121,7 +117,7 @@ public class Main {
                             xml.generate(expression);
 
                             Path path = XmlWritter.writeToFile(parent, xml);
-                            LOGGER.info(prefix + SUBLEVEL_PREFIX + "file : " + path);
+                            System.out.println(prefix + SUBLEVEL_PREFIX + "file : " + path);
                             
                             if (out.xml.validate) {
                                 XmlValidator.validate(path, xmlDef.xsds);
@@ -129,11 +125,11 @@ public class Main {
                         }
                                                 
                         if (out.list != null && !out.list.isEmpty()) {
-                            LOGGER.info(prefix + SUBLEVEL_PREFIX + "items : [");
+                            System.out.println(prefix + SUBLEVEL_PREFIX + "items : [");
                             generate(prefix + LEVEL_PREFIX, parent, expression, def, out.list);
-                            LOGGER.info(prefix + SUBLEVEL_PREFIX + "]");
+                            System.out.println(prefix + SUBLEVEL_PREFIX + "]");
                         }                        
-                        LOGGER.info(prefix + "}" );                        
+                        System.out.println(prefix + "}" );                        
                     }
                 }
 
