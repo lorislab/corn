@@ -9,5 +9,5 @@ public class DataGenerator {
     
     public Map<String, Object> variable;
     
-    public List<DataGeneratorList> list;
+    public DataGeneratorData data;
 }

@@ -6,8 +6,12 @@ import java.util.Set;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
+import static org.lorislab.corn.Logger.debug;
+import static org.lorislab.corn.Logger.info;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
  *
@@ -16,30 +20,41 @@ import org.w3c.dom.NodeList;
 public class XmlPathItem implements Map {
 
     private String path;
-    
+
     private Document document;
 
     private String text;
-    
+
     public XmlPathItem(String text, String path, Document document) {
         this.text = text;
         this.path = path;
         this.document = document;
     }
-    
+
     @Override
     public Object get(Object key) {
         try {
-            String pathKey = path + "/*[local-name()='" + (String) key + "']";
-            
+
+            String pathKey = path + "/*[local-name()='" + key.toString() + "']";
+            if (key instanceof Integer) {
+                int index = (Integer) key;
+                pathKey = path + "[" + (index + 1) + "]";
+            }
+
+            info(pathKey);
             XPath xPath = XPathFactory.newInstance().newXPath();
             NodeList nodeList = (NodeList) xPath.evaluate(pathKey, document, XPathConstants.NODESET);
-            if (nodeList.getLength() == 1) {
-                return new XmlPathItem(nodeList.item(0).getTextContent(), pathKey, document);
-            } else if (nodeList.getLength() > 1) {
-                return new XmlPathList(nodeList, pathKey, document);
-            }            
-            return null;
+            Node node = nodeList.item(0);
+            if (node.hasChildNodes()) {
+                if (node.getChildNodes().item(0) instanceof Text) {
+                    debug("TEXT: " + node.getTextContent());
+                    return node.getTextContent();
+                }
+                return new XmlPathItem(node.getTextContent(), pathKey, document);
+            } else {
+                debug("RESULT: " + node.getTextContent());
+                return node.getTextContent();
+            }
         } catch (Exception ex) {
             throw new RuntimeException("Error reading the xml " + key, ex);
         }
@@ -49,10 +64,16 @@ public class XmlPathItem implements Map {
     public String toString() {
         return text;
     }
-        
+
     @Override
     public int size() {
-        return 1;
+        try {
+            XPath xPath = XPathFactory.newInstance().newXPath();
+            NodeList nodeList = (NodeList) xPath.evaluate(path, document, XPathConstants.NODESET);
+            return nodeList.getLength();
+        } catch (Exception ex) {
+            throw new RuntimeException("Error size the xml " + path, ex);
+        }
     }
 
     @Override
@@ -62,7 +83,19 @@ public class XmlPathItem implements Map {
 
     @Override
     public boolean containsKey(Object key) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//        return true;
+        try {
+            String pathKey = path + "/*[local-name()='" + key.toString() + "']";
+            if (key instanceof Integer) {
+                int index = (Integer) key;
+                pathKey = path + "[" + (index + 1) + "]";
+            }
+            XPath xPath = XPathFactory.newInstance().newXPath();
+            NodeList nodeList = (NodeList) xPath.evaluate(pathKey, document, XPathConstants.NODESET);
+            return nodeList.getLength() != 0;
+        } catch (Exception ex) {
+            throw new RuntimeException("Error containsKey the xml " + key, ex);
+        }
     }
 
     @Override

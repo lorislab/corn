@@ -1,139 +1,164 @@
 package org.lorislab.corn;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
-import org.lorislab.corn.csv.CSVObject;
-import org.lorislab.corn.csv.CSVWritter;
-import org.lorislab.corn.el.Expressions;
-import org.lorislab.corn.model.CsvDefinition;
+import static org.lorislab.corn.Logger.debug;
+import org.lorislab.corn.js.Engine;
 import org.lorislab.corn.model.DataDefinition;
 import org.lorislab.corn.model.DataGenerator;
-import org.lorislab.corn.model.DataGeneratorList;
-import org.lorislab.corn.model.DataGeneratorOutput;
+import org.lorislab.corn.model.DataGeneratorData;
 import org.lorislab.corn.model.ServiceDataLoader;
+import static org.lorislab.corn.Logger.info;
+import org.lorislab.corn.csv.CSVObject;
+import org.lorislab.corn.csv.CSVWritter;
+import org.lorislab.corn.model.CsvDefinition;
+import org.lorislab.corn.model.DataGeneratorItem;
 import org.lorislab.corn.model.XmlDefinition;
 import org.lorislab.corn.xml.XmlObject;
 import org.lorislab.corn.xml.XmlWritter;
-import org.lorislab.corn.xml.validator.XmlValidator;
 
 public class Main {
 
     private static final String LEVEL_PREFIX = "    ";
-    
+
     private static final String SUBLEVEL_PREFIX = "  ";
-    
+
     public static void main(String[] args) throws Exception {
-        Expressions expression = new Expressions();
-        expression.addBean("SYS", new SystemBean());
+        Path parent = Paths.get("output");
+
+        Engine engine = new Engine();
+        engine.add("SYS", new SystemBean());
 
         DataDefinition def = ServiceDataLoader.loadDefinitions("def/definitions.json");
-        expression.addBean("def", def);
-        DataGenerator gen = ServiceDataLoader.loadDataGenerator("def/generator2.json");
-        expression.addBean("gen", gen);
+        engine.add("def", def);
+        DataGenerator gen = ServiceDataLoader.loadDataGenerator("def/generator4.json");
+        engine.add("gen", gen);
 
-        Properties prop = new Properties();
-        try (InputStream ins = new FileInputStream("def/inputs.properties")) {
-            prop.load(ins);
+        Map<String, Object> inputs = ServiceDataLoader.loadInputs("def/inputs.json");
+        engine.add("input", inputs);
+        for (Entry<String, Object> k : inputs.entrySet()) {
+            engine.add(k.getKey(), k.getValue());
         }
-        
-        Path parent = Paths.get("output");
-        Map<String, Object> inputs = new HashMap<>();
-        for (String name: prop.stringPropertyNames()) {
-            inputs.put(name, prop.getProperty(name));
-        }
-        
+
         for (String key : gen.input) {
             if (!inputs.containsKey(key)) {
                 throw new RuntimeException("Missing the input parameter: " + key);
-            }            
-        }
-        
-        System.out.println("Inputs {");        
-        for (Entry<String, Object> e : inputs.entrySet()) {
-            expression.addVariableValue(e.getKey(), e.getValue());
-            System.out.println("  " + e.getKey() + " : " + e.getValue());
-        }
-        System.out.println("}");
-        
-        System.out.println("Variables {");        
-        for (Entry<String, Object> e : gen.variable.entrySet()) {
-            Object value = e.getValue();
-            if (value instanceof String) {
-                value = expression.evaluateAllValueExpressions((String) value);
             }
-            System.out.println("  " + e.getKey() + " : " + value);
-            expression.addVariableValue(e.getKey(), value);
         }
-        System.out.println("}");
 
-        generate("", parent, expression, def, gen.list);
-    }
-
-    private static int number(Expressions expression, String value, String defaultValue) {
-        String tmp = expression.evaluateString(value, defaultValue);
-        return Integer.parseInt(tmp);
-    }
-
-    private static boolean precondition(Expressions expression, String value, boolean defaultValue) {
-        if (value != null && !value.isEmpty()) {
-            return expression.evaluateValueExpression(value);
+        info("Inputs {");
+        for (Entry<String, Object> e : inputs.entrySet()) {
+            engine.add(e.getKey(), e.getValue());
+            info("  " + e.getKey() + " : " + e.getValue());
         }
-        return defaultValue;
+        info("}");
+
+        info("Variables {");
+        for (Entry<String, Object> e : gen.variable.entrySet()) {
+            Object value = engine.evalVar(e.getValue());
+            info("  " + e.getKey() + " : " + value);
+            engine.add(e.getKey(), value);
+        }
+        info("}");
+
+        generate(engine, "", parent, def, gen.data);
     }
 
-    private static void generate(String prefix, Path parent, Expressions expression, DataDefinition def, List<DataGeneratorList> data) {
-        for (DataGeneratorList list : data) {
-            int size = number(expression, list.size, "1");
-            for (int i = 0; i < size; i++) {
-                expression.addVariableValue(list.index, i);
+    private static void generate(Engine engine, String prefix, Path parent, DataDefinition def, DataGeneratorData data) throws Exception {
+        int size = engine.evalInt(data.size);
+        debug("Generate the size " + size);
 
-                for (DataGeneratorOutput out : list.data) {
+        for (int i = 0; i < size; i++) {
 
-                    if (precondition(expression, out.precondition, true)) {
+            for (DataGeneratorItem item : data.items) {
 
-                        System.out.println(prefix + out.name + " {" );
-                        if (out.csv != null) {                            
-                            CsvDefinition csvDef = def.csv.get(out.definition);
-                            CSVObject csv = new CSVObject(out, csvDef);
+                engine.add(data.index, i);
 
-                            expression.addBean((String) expression.evaluate(out.name), csv);
-                            csv.generate(expression);
+                CsvDefinition cf = def.csv.get(item.definition);
+                if (cf != null) {
+                    CSVObject obj = new CSVObject(item, cf);
+                    engine.add(item.name, obj);
 
-                            Path path = CSVWritter.writeToFile(parent, csv);
-                            System.out.println(prefix + SUBLEVEL_PREFIX + "file :" + path);
-                            
-                        } else if (out.xml != null) {
-                            XmlDefinition xmlDef = def.xml.get(out.definition);
-                            XmlObject xml = new XmlObject(out, xmlDef);
+                    Map<String, Object> tmp = engine.evalFile(item.js);
+                    obj.setFileName((String) tmp.get("file"));
+                    obj.setData((List<Map<String, Object>>) tmp.get("data"));
 
-                            expression.addBean((String) expression.evaluate(out.name), xml);
-                            xml.generate(expression);
+                    CSVWritter.writeToFile(parent, obj);
+                } else {
+                    XmlDefinition xcf = def.xml.get(item.definition);
 
-                            Path path = XmlWritter.writeToFile(parent, xml);
-                            System.out.println(prefix + SUBLEVEL_PREFIX + "file : " + path);
-                            
-                            if (out.xml.validate) {
-                                XmlValidator.validate(path, xmlDef.xsds);
-                            }
-                        }
-                                                
-                        if (out.list != null && !out.list.isEmpty()) {
-                            System.out.println(prefix + SUBLEVEL_PREFIX + "items : [");
-                            generate(prefix + LEVEL_PREFIX, parent, expression, def, out.list);
-                            System.out.println(prefix + SUBLEVEL_PREFIX + "]");
-                        }                        
-                        System.out.println(prefix + "}" );                        
+                    XmlObject xm = new XmlObject(item, xcf);
+                    engine.add(item.name, xm);
+
+                    Map<String, Object> tmp = engine.evalFile(item.js);
+                    if (tmp != null && !tmp.isEmpty()) {
+                        xm.setFileName((String) tmp.get("file"));
+                        xm.setRoot((String) tmp.get("root"));
+                        xm.setNamespace((String) tmp.get("namespace"));
+                        xm.setData((Map<String, Object>) tmp.get("data"));
+                        xm.generate();
+                        XmlWritter.writeToFile(parent, xm);
                     }
                 }
 
+                if (item.data != null) {
+                    generate(engine, prefix, parent, def, item.data);
+                }
             }
         }
+//        for (DataGeneratorData item : data) {
+//
+//        }
     }
+
+//        for (DataGeneratorData list : data) {
+//            int size = number(expression, list.size, "1");
+//            for (int i = 0; i < size; i++) {
+//                expression.addVariableValue(list.index, i);
+//
+//                for (DataGeneratorItem out : list.data) {
+//
+//                    if (precondition(expression, out.precondition, true)) {
+//
+//                        info(prefix + out.name + " {" );
+//                        if (out.csv != null) {                            
+//                            CsvDefinition csvDef = def.csv.get(out.definition);
+//                            CSVObject csv = new CSVObject(out, csvDef);
+//
+//                            expression.addBean((String) expression.evaluate(out.name), csv);
+//                            csv.generate(expression);
+//
+//                            Path path = CSVWritter.writeToFile(parent, csv);
+//                            info(prefix + SUBLEVEL_PREFIX + "file :" + path);
+//                            
+//                        } else if (out.xml != null) {
+//                            XmlDefinition xmlDef = def.xml.get(out.definition);
+//                            XmlObject xml = new XmlObject(out, xmlDef);
+//
+//                            expression.addBean((String) expression.evaluate(out.name), xml);
+//                            xml.generate(expression);
+//
+//                            Path path = XmlWritter.writeToFile(parent, xml);
+//                            info(prefix + SUBLEVEL_PREFIX + "file : " + path);
+//                            
+//                            if (out.xml.validate) {
+//                                XmlValidator.validate(path, xmlDef.xsds);
+//                            }
+//                        }
+//                                                
+//                        if (out.list != null && !out.list.isEmpty()) {
+//                            info(prefix + SUBLEVEL_PREFIX + "items : [");
+//                            generate(prefix + LEVEL_PREFIX, parent, expression, def, out.list);
+//                            info(prefix + SUBLEVEL_PREFIX + "]");
+//                        }                        
+//                        info(prefix + "}" );                        
+//                    }
+//                }
+//
+//            }
+//        }
+//    }
 }
