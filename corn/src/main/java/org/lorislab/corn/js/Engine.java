@@ -4,10 +4,8 @@ import java.io.FileReader;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
 /**
@@ -20,14 +18,19 @@ public class Engine {
 
     private static ScriptEngineManager mgr = new ScriptEngineManager();
 
-    private ScriptEngine engine;
+//    private ScriptEngine engine;
 
     public Engine() {
-        engine = mgr.getEngineByName("nashorn");
+//        engine = mgr.getEngineByName("nashorn");
     }
 
+    private ScriptEngine getEngine() {
+        return mgr.getEngineByName("nashorn");
+//return engine;
+    }
+    
     public void add(String name, Object value) {
-        engine.put(name, value);
+        mgr.put(name, value);
     }
 
     public Object evalVar(Object value) throws Exception {
@@ -53,17 +56,18 @@ public class Engine {
     public Object evalString(final String s) throws Exception {
         final Matcher matcher = PATTERN.matcher(s);
         if (matcher.find()) {
-            return engine.eval(matcher.group(1));
+            return getEngine().eval(matcher.group(1));
         }
-        return engine.eval(s);
+        return getEngine().eval(s);
     }
 
     public String evalAll(final String s) throws Exception {
+        ScriptEngine e = getEngine();
         final StringBuffer sb = new StringBuffer();
         final Matcher matcher = PATTERN.matcher(s);
         while (matcher.find()) {
             final String expression = matcher.group(1);
-            final Object result = engine.eval(expression);
+            final Object result = e.eval(expression);
             matcher.appendReplacement(sb, result != null ? result.toString() : "");
         }
         matcher.appendTail(sb);
@@ -71,7 +75,7 @@ public class Engine {
     }
 
     public Map<String, Object> evalFile(String fileName) throws Exception {
-        Object tmp = engine.eval(new FileReader(fileName));        
+        Object tmp = getEngine().eval(new FileReader(fileName));        
         return (Map<String, Object>) ScriptObjectMirror.wrapAsJSONCompatible(tmp, null);
     }
 }

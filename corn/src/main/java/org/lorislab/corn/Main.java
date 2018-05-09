@@ -76,7 +76,8 @@ public class Main {
             for (DataGeneratorItem item : data.items) {
 
                 engine.add(data.index, i);
-
+                info(prefix + "[" + i + "] " + item.name + " {" );
+                
                 CsvDefinition cf = def.csv.get(item.definition);
                 if (cf != null) {
                     CSVObject obj = new CSVObject(item, cf);
@@ -86,7 +87,9 @@ public class Main {
                     obj.setFileName((String) tmp.get("file"));
                     obj.setData((List<Map<String, Object>>) tmp.get("data"));
 
-                    CSVWritter.writeToFile(parent, obj);
+                    Path path = CSVWritter.writeToFile(parent, obj);
+                    info(prefix + SUBLEVEL_PREFIX + "file :" + path);
+                    
                 } else {
                     XmlDefinition xcf = def.xml.get(item.definition);
 
@@ -100,13 +103,19 @@ public class Main {
                         xm.setNamespace((String) tmp.get("namespace"));
                         xm.setData((Map<String, Object>) tmp.get("data"));
                         xm.generate();
-                        XmlWritter.writeToFile(parent, xm);
+                        Path path = XmlWritter.writeToFile(parent, xm);
+                        
+                        info(prefix + SUBLEVEL_PREFIX + "file : " + path);
                     }
                 }
 
                 if (item.data != null) {
-                    generate(engine, prefix, parent, def, item.data);
+                    info(prefix + SUBLEVEL_PREFIX + "items : [");
+                    generate(engine, prefix + LEVEL_PREFIX, parent, def, item.data);
+                    info(prefix + SUBLEVEL_PREFIX + "]");
                 }
+                
+                info(prefix + "}" ); 
             }
         }
 //        for (DataGeneratorData item : data) {

@@ -41,7 +41,7 @@ public class XmlPathItem implements Map {
                 pathKey = path + "[" + (index + 1) + "]";
             }
 
-            info(pathKey);
+            debug(pathKey);
             XPath xPath = XPathFactory.newInstance().newXPath();
             NodeList nodeList = (NodeList) xPath.evaluate(pathKey, document, XPathConstants.NODESET);
             Node node = nodeList.item(0);

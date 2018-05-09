@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
+import static org.lorislab.corn.Logger.debug;
 import static org.lorislab.corn.Logger.info;
 import org.lorislab.corn.model.DataGeneratorItem;
 import org.lorislab.corn.model.XmlConfig;
@@ -119,12 +120,12 @@ public class XmlObject implements Map {
             Node node = nodeList.item(0);
             if (node.hasChildNodes()) {
                 if (node.getChildNodes().item(0) instanceof Text) {
-                    info("TEXT: " + node.getTextContent());
+                    debug("TEXT: " + node.getTextContent());
                     return node.getTextContent();
                 }
                 return new XmlPathItem(nodeList.item(0).getTextContent(), pathKey, document);
             } else {
-                info("RESULT: " + node.getTextContent());
+                debug("RESULT: " + node.getTextContent());
                 return node.getTextContent();                
             }
             
