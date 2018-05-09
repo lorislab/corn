@@ -65,6 +65,10 @@ public class XmlPathItem implements Map {
         return text;
     }
 
+    public int getSize() {
+        return size();
+    }
+    
     @Override
     public int size() {
         try {
