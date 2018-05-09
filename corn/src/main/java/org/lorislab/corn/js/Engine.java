@@ -4,6 +4,7 @@ import java.io.FileReader;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -70,8 +71,7 @@ public class Engine {
     }
 
     public Map<String, Object> evalFile(String fileName) throws Exception {
-        engine.eval(new FileReader(fileName));
-        Object tmp = engine.eval("main();");
+        Object tmp = engine.eval(new FileReader(fileName));        
         return (Map<String, Object>) ScriptObjectMirror.wrapAsJSONCompatible(tmp, null);
     }
 }
