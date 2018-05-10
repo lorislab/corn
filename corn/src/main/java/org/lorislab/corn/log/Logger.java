@@ -1,4 +1,4 @@
-package org.lorislab.corn;
+package org.lorislab.corn.log;
 
 public class Logger {
     

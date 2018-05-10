@@ -17,12 +17,20 @@
         <url>http://www.lorislab.org</url>
     </organization>
 
-    <contributors>
-        <contributor>
-            <name>Andrej Petras</name>
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+    
+    <developers>
+        <developer>
+            <id>Andrej Petras</id>
+            <name>Andrej Petras</name>            
             <email>andrej@lorislab.org</email>
-        </contributor>
-    </contributors>
+        </developer>
+    </developers>
 
     <scm>
         <connection>scm:git:git@github.com:lorislab/cron.git</connection>

@@ -15,12 +15,38 @@
  */
 package org.lorislab.corn.model;
 
-import java.util.List;
+import java.util.Map;
 
-public class XmlDefinition {
+/**
+ * The corn configuration.
+ * 
+ * @author andrej
+ */
+public class CornConfig {
+   
+    /**
+     * The definition file
+     */
+    public String definition;
     
-    public String version;
+    /**
+     * The generator file
+     */
+    public String generator;
+    
+    /**
+     * The target output directory
+     */
+    public String target;
+    
+    /**
+     * The input parameters.
+     */
+    public Map<String, Object> parameters;
+    
+    /**
+     * The external beans
+     */
+    public Map<String, String> beans;
 
-    public List<String> xsds;
-           
 }

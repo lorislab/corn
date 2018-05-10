@@ -15,6 +15,10 @@ public class SystemBean {
         return UUID.randomUUID().toString();
     }
     
+    public String string(int length) {
+        return UUID.randomUUID().toString().substring(length);
+    }
+    
     public Object random(List data) {
         int index = ThreadLocalRandom.current().nextInt(0, data.size());
         return data.get(index);
