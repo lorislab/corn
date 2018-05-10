@@ -15,50 +15,43 @@
  */
 package org.lorislab.corn.xml;
 
+import java.io.BufferedWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import javax.xml.soap.MessageFactory;
+import javax.xml.soap.SOAPMessage;
+import javax.xml.transform.Source;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
+import org.lorislab.corn.js.Engine;
 import static org.lorislab.corn.log.Logger.debug;
+import org.lorislab.corn.model.AbstractDataObject;
+import org.lorislab.corn.model.DataDefinition;
 import org.lorislab.corn.model.DataGeneratorItem;
-import org.lorislab.corn.model.XmlConfig;
-import org.lorislab.corn.model.XmlDefinition;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
-public class XmlObject implements Map {
-
-    private String fileName;
-
-    private final XmlDefinition definition;
+public class XmlObject extends AbstractDataObject implements Map {
 
     private Document document;
 
     private boolean wsdl;
-    
-    private final DataGeneratorItem output;
 
     private Map<String, Object> data;
-        
+
     private String root;
-    
+
     private String namespace;
-    
-    public XmlObject(DataGeneratorItem output, XmlDefinition definition) {
-        this.output = output;
-        this.definition = definition;
-    }
 
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
-    }
-
-    public void setRoot(String root) {
-        this.root = root;
+    public XmlObject(DataDefinition definition, DataGeneratorItem output) {
+        super(definition, output);
     }
 
     public String getNamespace() {
@@ -68,47 +61,74 @@ public class XmlObject implements Map {
     public String getRoot() {
         return root;
     }
-    
-    public void setData(Map<String, Object> data) {
-        this.data = data;
-    }
 
     public Map<String, Object> getData() {
         return data;
     }
-    
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
-    
+
     public boolean isWsdl() {
         return wsdl;
-    }
-
-    public XmlDefinition getDefinition() {
-        return definition;
-    }
-
-    public String getFileName() {
-        return fileName;
     }
 
     public Document getDocument() {
         return document;
     }
 
-    public void generate() {        
+    @Override
+    public Path generate(Path directory, Engine engine) {
+        try {
+            Map<String, Object> tmp = engine.evalFile(output.js);
+            fileName = (String) tmp.get("file");
+            root = (String) tmp.get("root");
+            namespace = (String) tmp.get("namespace");
+            data = (Map<String, Object>) tmp.get("data");
+        } catch (Exception ex) {
+            throw new RuntimeException("Error reading the xml model", ex);
+        }
+        
         GeneratorConfig config = new GeneratorConfig();
-        XmlConfig xc = this.output.config;
+        Map<String, Object> xc = this.output.config;
         if (xc != null) {
-            if (xc.maximumRecursionDepth != null) {
-                config.maximumRecursionDepth = xc.maximumRecursionDepth;
+            Object maximumRecursionDepth = xc.get("maximumRecursionDepth");
+            if (maximumRecursionDepth instanceof Integer) {
+                config.maximumRecursionDepth = (Integer) maximumRecursionDepth;
             }
         }
         Generator generator = new Generator(config, this.definition.xsds);
         generator.generate(namespace, root, data);
         document = generator.getDocument();
         wsdl = generator.isWsdl();
+
+        return writeToFile(directory);
+    }
+
+    private Path writeToFile(Path parent) {
+        Path path = parent.resolve(fileName);
+        try {
+            Source sc;
+            if (wsdl) {
+                SOAPMessage soapMessage = MessageFactory.newInstance().createMessage();
+                soapMessage.getSOAPBody().addDocument(document);
+
+                soapMessage.getSOAPPart().getEnvelope().removeNamespaceDeclaration("SOAP-ENV");
+                soapMessage.getSOAPPart().getEnvelope().addNamespaceDeclaration("soap", "http://schemas.xmlsoap.org/soap/envelope/");
+                soapMessage.getSOAPPart().getEnvelope().setPrefix("soap");
+                soapMessage.getSOAPHeader().setPrefix("soap");
+                soapMessage.getSOAPBody().setPrefix("soap");
+                sc = soapMessage.getSOAPPart().getContent();
+            } else {
+                sc = new DOMSource(document);
+            }
+
+            try (BufferedWriter writer = Files.newBufferedWriter(path)) {
+                XMLUtil.write(sc, writer);
+            } catch (Exception ex) {
+                throw new RuntimeException("Error write XML ", ex);
+            }
+        } catch (Exception exx) {
+            throw new RuntimeException(exx);
+        }
+        return path;
     }
 
     @Override
@@ -122,13 +142,12 @@ public class XmlObject implements Map {
                     sb.append("/*[local-name()='");
                     sb.append(tmp[i]);
                     sb.append("']");
-                }                
+                }
                 pathKey = sb.toString();
             } else {
                 pathKey = "/*[local-name()='" + pathKey + "']";
             }
 
-            
             XPath xPath = XPathFactory.newInstance().newXPath();
             NodeList nodeList = (NodeList) xPath.evaluate(pathKey, document, XPathConstants.NODESET);
             Node node = nodeList.item(0);
@@ -137,12 +156,12 @@ public class XmlObject implements Map {
                     debug("TEXT: " + node.getTextContent());
                     return node.getTextContent();
                 }
-                return new XmlPathItem(nodeList.item(0).getTextContent(), pathKey, document);
+                return new XmlPathItem(pathKey, document);
             } else {
                 debug("RESULT: " + node.getTextContent());
-                return node.getTextContent();                
+                return node.getTextContent();
             }
-            
+
         } catch (Exception ex) {
             throw new RuntimeException("Error reading the xml " + key, ex);
         }
@@ -150,57 +169,60 @@ public class XmlObject implements Map {
 
     @Override
     public int size() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (!isEmpty()) {
+            return document.getChildNodes().getLength();
+        }
+        return 0;
     }
 
     @Override
     public boolean isEmpty() {
-        return document == null;
+        return document == null && (document.hasAttributes() || document.hasChildNodes());
     }
 
     @Override
     public boolean containsKey(Object key) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported method for the object.");
     }
 
     @Override
     public boolean containsValue(Object value) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported method for the object.");
     }
 
     @Override
     public Object put(Object key, Object value) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported method for the object.");
     }
 
     @Override
     public Object remove(Object key) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported method for the object.");
     }
 
     @Override
     public void putAll(Map m) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported method for the object.");
     }
 
     @Override
     public void clear() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported method for the object.");
     }
 
     @Override
     public Set keySet() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported method for the object.");
     }
 
     @Override
     public Collection values() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported method for the object.");
     }
 
     @Override
     public Set entrySet() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported method for the object.");
     }
 
 }

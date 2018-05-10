@@ -33,14 +33,12 @@ import org.w3c.dom.Text;
  */
 public class XmlPathItem implements Map {
 
-    private String path;
+    private final String path;
 
-    private Document document;
+    private final Document document;
 
-    private String text;
 
-    public XmlPathItem(String text, String path, Document document) {
-        this.text = text;
+    public XmlPathItem(String path, Document document) {
         this.path = path;
         this.document = document;
     }
@@ -64,7 +62,7 @@ public class XmlPathItem implements Map {
                     debug("TEXT: " + node.getTextContent());
                     return node.getTextContent();
                 }
-                return new XmlPathItem(node.getTextContent(), pathKey, document);
+                return new XmlPathItem(pathKey, document);
             } else {
                 debug("RESULT: " + node.getTextContent());
                 return node.getTextContent();
@@ -72,11 +70,6 @@ public class XmlPathItem implements Map {
         } catch (Exception ex) {
             throw new RuntimeException("Error reading the xml " + key, ex);
         }
-    }
-
-    @Override
-    public String toString() {
-        return text;
     }
 
     public int getSize() {
@@ -96,7 +89,7 @@ public class XmlPathItem implements Map {
 
     @Override
     public boolean isEmpty() {
-        return false;
+        return size() == 0;
     }
 
     @Override
@@ -118,41 +111,41 @@ public class XmlPathItem implements Map {
 
     @Override
     public boolean containsValue(Object value) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported method for the object.");
     }
 
     @Override
     public Object put(Object key, Object value) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported method for the object.");
     }
 
     @Override
     public Object remove(Object key) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported method for the object.");
     }
 
     @Override
     public void putAll(Map m) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported method for the object.");
     }
 
     @Override
     public void clear() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported method for the object.");
     }
 
     @Override
     public Set keySet() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported method for the object.");
     }
 
     @Override
     public Collection values() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported method for the object.");
     }
 
     @Override
     public Set entrySet() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported method for the object.");
     }
 }

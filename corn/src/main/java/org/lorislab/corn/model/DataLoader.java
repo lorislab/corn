@@ -16,6 +16,10 @@
 package org.lorislab.corn.model;
 
 import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.json.bind.Jsonb;
 import javax.json.bind.JsonbBuilder;
 
@@ -47,10 +51,18 @@ public final class DataLoader {
      * @param file the file name.
      * @return the corresponding corn definitions.
      */
-    public static DataDefinition loadDefinitions(String file) {
+    public static Map<String, DataDefinition> loadDefinitions(String file) {
+        Map<String, DataDefinition> result = null;
         try (FileInputStream​ in = new FileInputStream​(file)) {
             Jsonb jsonb = JsonbBuilder.create();
-            return jsonb.fromJson(in, DataDefinition.class);
+            List<DataDefinition> tmp = jsonb.fromJson(in, new ArrayList<DataDefinition>(){}.getClass().getGenericSuperclass());
+            if (tmp != null) {
+                result = new HashMap<>(tmp.size());
+                for (DataDefinition item : tmp) {
+                    result.put(item.name, item);
+                }
+            }
+            return result;
         } catch (Exception ex) {
             throw new RuntimeException("Error loading the definitions file " + file, ex);
         }

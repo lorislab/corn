@@ -15,12 +15,18 @@
  */
 package org.lorislab.corn.model;
 
-import java.util.Map;
+import java.util.List;
 
 public class DataDefinition {
 
-    public Map<String, XmlDefinition> xml;
+    public String name;
     
-    public Map<String, CsvDefinition> csv;
+    public String version;
+    
+    public String separator;
+        
+    public List<String> xsds;
+    
+    public List<String> columns;
     
 }

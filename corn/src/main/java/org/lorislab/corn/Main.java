@@ -17,7 +17,6 @@ package org.lorislab.corn;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import static org.lorislab.corn.log.Logger.debug;
@@ -28,13 +27,10 @@ import org.lorislab.corn.model.DataGeneratorData;
 import org.lorislab.corn.model.DataLoader;
 import static org.lorislab.corn.log.Logger.info;
 import org.lorislab.corn.csv.CSVObject;
-import org.lorislab.corn.csv.CSVWritter;
+import org.lorislab.corn.model.AbstractDataObject;
 import org.lorislab.corn.model.CornConfig;
-import org.lorislab.corn.model.CsvDefinition;
 import org.lorislab.corn.model.DataGeneratorItem;
-import org.lorislab.corn.model.XmlDefinition;
 import org.lorislab.corn.xml.XmlObject;
-import org.lorislab.corn.xml.XmlWritter;
 
 public class Main {
 
@@ -70,7 +66,7 @@ public class Main {
         }
         info("}");
         
-        DataDefinition def = DataLoader.loadDefinitions(config.definition);
+        Map<String, DataDefinition> def = DataLoader.loadDefinitions(config.definition);
         engine.add("def", def);
         DataGenerator gen = DataLoader.loadDataGenerator(config.generator);
         engine.add("gen", gen);
@@ -86,7 +82,7 @@ public class Main {
         generate(engine, "", target, def, gen.data);
     }
 
-    private static void generate(Engine engine, String prefix, Path target, DataDefinition def, DataGeneratorData data) throws Exception {
+    private static void generate(Engine engine, String prefix, Path target, Map<String, DataDefinition> definitions, DataGeneratorData data) throws Exception {
         int size = engine.evalInt(data.size);
         debug("Generate the size " + size);
 
@@ -97,40 +93,31 @@ public class Main {
                 engine.add(data.index, i);
                 info(prefix + "[" + i + "] " + item.name + " {" );
                 
-                CsvDefinition cf = def.csv.get(item.definition);
-                if (cf != null) {
-                    CSVObject obj = new CSVObject(item, cf);
-                    engine.add(item.name, obj);
-
-                    Map<String, Object> tmp = engine.evalFile(item.js);
-                    obj.setFileName((String) tmp.get("file"));
-                    obj.setData((List<Map<String, Object>>) tmp.get("data"));
-
-                    Path path = CSVWritter.writeToFile(target, obj);
-                    info(prefix + SUBLEVEL_PREFIX + "file :" + path);
+                DataDefinition def = definitions.get(item.definition);
+                if (def != null) {
                     
-                } else {
-                    XmlDefinition xcf = def.xml.get(item.definition);
-
-                    XmlObject xm = new XmlObject(item, xcf);
-                    engine.add(item.name, xm);
-
-                    Map<String, Object> tmp = engine.evalFile(item.js);
-                    if (tmp != null && !tmp.isEmpty()) {
-                        xm.setFileName((String) tmp.get("file"));
-                        xm.setRoot((String) tmp.get("root"));
-                        xm.setNamespace((String) tmp.get("namespace"));
-                        xm.setData((Map<String, Object>) tmp.get("data"));
-                        xm.generate();
-                        Path path = XmlWritter.writeToFile(target, xm);
-                        
+                    AbstractDataObject object = null;                    
+                    if (def.xsds != null && !def.xsds.isEmpty()) {                                        
+                        object = new XmlObject(def, item);
+                    } else if (def.columns != null && !def.columns.isEmpty()) {
+                        object = new CSVObject(def, item);
+                    } else {
+                        info("Could not found the definition type xmls or csv base on the attributes [xsds.columns] for the name " + item.definition);
+                    }
+                    
+                    if (object != null) {                        
+                        engine.add(object.getOutput().name, object);
+                        Path path = object.generate(target, engine);
                         info(prefix + SUBLEVEL_PREFIX + "file : " + path);
                     }
+                        
+                } else {
+                    info("Could not found the definition for the name " + item.definition);
                 }
-
+                
                 if (item.data != null) {
                     info(prefix + SUBLEVEL_PREFIX + "items : [");
-                    generate(engine, prefix + LEVEL_PREFIX, target, def, item.data);
+                    generate(engine, prefix + LEVEL_PREFIX, target, definitions, item.data);
                     info(prefix + SUBLEVEL_PREFIX + "]");
                 }
                 

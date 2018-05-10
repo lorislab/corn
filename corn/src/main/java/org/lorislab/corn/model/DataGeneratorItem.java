@@ -15,6 +15,8 @@
  */
 package org.lorislab.corn.model;
 
+import java.util.Map;
+
 
 public class DataGeneratorItem {
  
@@ -24,7 +26,7 @@ public class DataGeneratorItem {
     
     public String js;
             
-    public XmlConfig config;
+    public Map<String, Object> config;
     
     public DataGeneratorData data;
 }
