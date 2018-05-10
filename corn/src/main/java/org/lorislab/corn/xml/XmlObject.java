@@ -87,7 +87,10 @@ public class XmlObject extends AbstractDataObject implements Map {
         Generator generator = new Generator(config, this.definition.xsds);
         document = generator.generate(namespace, root, data);
         
-        return writeToFile(directory, generator.isWsdl());
+        Path result = writeToFile(directory, generator.isWsdl());
+        XmlValidator.validate(result, definition.xsds);
+        
+        return result;
     }
 
     private Path writeToFile(Path parent, boolean wsdl) {

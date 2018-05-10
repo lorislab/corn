@@ -24,7 +24,8 @@ public class UUIDBean {
     }
     
     public String toString(int length) {
-        return UUID.randomUUID().toString().substring(length);
+        String result = get().substring(0, length);
+        return result;
     }
         
 }

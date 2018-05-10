@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.lorislab.corn.xml.validator;
+package org.lorislab.corn.xml;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileReader;
@@ -40,7 +40,6 @@ import org.w3c.dom.Element;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import static org.lorislab.corn.log.Logger.error;
 
 public class XmlValidator {
 
