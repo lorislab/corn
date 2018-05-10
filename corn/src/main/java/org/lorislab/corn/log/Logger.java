@@ -22,6 +22,10 @@ public class Logger {
     public static void info(Object message) {
         System.out.println(message);
     }
+
+    public static void info() {
+        System.out.println();
+    }
     
     public static void debug(Object message) {
         if (DEBUG) {
@@ -31,5 +35,9 @@ public class Logger {
     
     public static void error(Object message) {
         System.err.println(message);
+    }    
+    
+    public static void error() {
+        System.err.println();
     }    
 }

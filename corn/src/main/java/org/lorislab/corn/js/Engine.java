@@ -33,15 +33,8 @@ public class Engine {
 
     private static ScriptEngineManager mgr = new ScriptEngineManager();
 
-//    private ScriptEngine engine;
-
-    public Engine() {
-//        engine = mgr.getEngineByName("nashorn");
-    }
-
     private ScriptEngine getEngine() {
         return mgr.getEngineByName("nashorn");
-//return engine;
     }
     
     public void add(String name, Object value) {

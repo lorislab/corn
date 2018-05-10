@@ -16,10 +16,10 @@
 package org.lorislab.corn.xml.validator;
 
 import java.io.ByteArrayInputStream;
+import java.io.FileReader;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.Provider.Service;
 import java.util.ArrayList;
 import java.util.List;
 import javax.wsdl.Definition;
@@ -34,11 +34,13 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
+import org.lorislab.corn.log.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import static org.lorislab.corn.log.Logger.error;
 
 public class XmlValidator {
 
@@ -56,7 +58,7 @@ public class XmlValidator {
                         sources.add(source);                        
                     }
                 } else {
-                    sources.add(new StreamSource(Service.class.getResourceAsStream(item), item));
+                    sources.add(new StreamSource(new FileReader(item), item));
                 }
             }
             Schema schema = SF.newSchema(sources.toArray(new Source[sources.size()]));
@@ -69,8 +71,6 @@ public class XmlValidator {
                 Document doc = soapMessage.getSOAPBody().extractContentAsDocument();
                 source = new DOMSource(doc);
             } else {
-//                String xml = new String(Files.readAllBytes(path));
-//                StringReader reader = new StringReader(xml);
                 source = new StreamSource(path.toFile());
             }
             
@@ -105,23 +105,22 @@ public class XmlValidator {
 
     public static class XmlErrorHandler implements ErrorHandler {
 
-        private Path path;
+        private final Path path;
 
         public XmlErrorHandler(Path path) {
             this.path = path;
         }
 
         private void log(SAXParseException ex, String type) {
-            System.err.println();
-            System.err.println("**********************************************************");
-            System.err.println("TYPE: " + type);
-            System.err.println("FILE: " + path);
-//            System.err.println("XSD: " + def.getValue());
-            System.err.println("MSG: " + ex.getMessage());
-            System.err.println("LINE: " + ex.getLineNumber());
-            System.err.println("COLUMN: " + ex.getColumnNumber());
-            System.err.println("**********************************************************");
-            System.err.println();
+            Logger.error();
+            Logger.error("**********************************************************");
+            Logger.error("TYPE: " + type);
+            Logger.error("FILE: " + path);
+            Logger.error("MSG: " + ex.getMessage());
+            Logger.error("LINE: " + ex.getLineNumber());
+            Logger.error("COLUMN: " + ex.getColumnNumber());
+            Logger.error("**********************************************************");
+            Logger.error();
         }
 
         @Override

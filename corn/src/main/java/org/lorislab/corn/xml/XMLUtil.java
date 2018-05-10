@@ -72,7 +72,6 @@ public class XMLUtil {
         if (ns != null) {
             for (Entry<String, String> e : ns.entrySet()) {
                 if (e.getKey() != null && !e.getKey().isEmpty()) {
-//                    System.out.println(e.getKey() + " -> " + e.getValue());
                     doc.getDocumentElement().setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, "xmlns:" + e.getKey(), e.getValue());
                 }
             }
@@ -83,27 +82,20 @@ public class XMLUtil {
     }
 
     public static QName getQName(XSModel xsModel, String root) {
-        String namespace = getNamespace(xsModel, root);
-        return new QName(namespace, root);
-    }
-
-    public static String getNamespace(XSModel xsModel, String root) {
         String namespace = null;
         XSNamedMap m1 = xsModel.getComponents(XSConstants.ELEMENT_DECLARATION);
         if (m1 != null) {
             for (int i = 0; i < m1.getLength(); i++) {
                 XSObject o = m1.item(i);
-//                System.out.println("DEFINITION: " + o.getName());
                 if (root.equals(o.getName())) {
                     namespace = o.getNamespace();
                 }
             }
         }
-        return namespace;
+        return new QName(namespace, root);
     }
 
     public static void writeToFile(Document document, File file) throws Exception {
-        // XML to string
         TransformerFactory tf = TransformerFactory.newInstance();
         Transformer t = tf.newTransformer();
         t.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -116,7 +108,6 @@ public class XMLUtil {
     }
 
     public static void write(Source source, Writer writer) throws Exception {
-        // XML to string
         TransformerFactory tf = TransformerFactory.newInstance();
         Transformer t = tf.newTransformer();
         t.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -124,10 +115,10 @@ public class XMLUtil {
         t.transform(source, new StreamResult(writer));
     }
 
-    public static void toString(Document document) throws Exception {
+    public static String toString(Document document) throws Exception {
         StringWriter sw = new StringWriter();
         write(document, sw);
-        System.out.println(sw.toString());
+        return sw.toString();
     }
 
 }

@@ -25,30 +25,23 @@ import javax.xml.soap.MessageFactory;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
 import org.lorislab.corn.js.Engine;
-import static org.lorislab.corn.log.Logger.debug;
 import org.lorislab.corn.model.AbstractDataObject;
 import org.lorislab.corn.model.DataDefinition;
 import org.lorislab.corn.model.DataGeneratorItem;
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
 public class XmlObject extends AbstractDataObject implements Map {
 
     private Document document;
-
-    private boolean wsdl;
 
     private Map<String, Object> data;
 
     private String root;
 
     private String namespace;
+    
+    private String xpath;
 
     public XmlObject(DataDefinition definition, DataGeneratorItem output) {
         super(definition, output);
@@ -66,10 +59,6 @@ public class XmlObject extends AbstractDataObject implements Map {
         return data;
     }
 
-    public boolean isWsdl() {
-        return wsdl;
-    }
-
     public Document getDocument() {
         return document;
     }
@@ -82,6 +71,7 @@ public class XmlObject extends AbstractDataObject implements Map {
             root = (String) tmp.get("root");
             namespace = (String) tmp.get("namespace");
             data = (Map<String, Object>) tmp.get("data");
+            xpath = XmlPathItem.createXPath("", root);
         } catch (Exception ex) {
             throw new RuntimeException("Error reading the xml model", ex);
         }
@@ -95,14 +85,12 @@ public class XmlObject extends AbstractDataObject implements Map {
             }
         }
         Generator generator = new Generator(config, this.definition.xsds);
-        generator.generate(namespace, root, data);
-        document = generator.getDocument();
-        wsdl = generator.isWsdl();
-
-        return writeToFile(directory);
+        document = generator.generate(namespace, root, data);
+        
+        return writeToFile(directory, generator.isWsdl());
     }
 
-    private Path writeToFile(Path parent) {
+    private Path writeToFile(Path parent, boolean wsdl) {
         Path path = parent.resolve(fileName);
         try {
             Source sc;
@@ -133,38 +121,7 @@ public class XmlObject extends AbstractDataObject implements Map {
 
     @Override
     public Object get(Object key) {
-        try {
-            String pathKey = (String) key;
-            if (pathKey.startsWith("/")) {
-                String[] tmp = pathKey.split("/");
-                StringBuilder sb = new StringBuilder();
-                for (int i = 1; i < tmp.length; i++) {
-                    sb.append("/*[local-name()='");
-                    sb.append(tmp[i]);
-                    sb.append("']");
-                }
-                pathKey = sb.toString();
-            } else {
-                pathKey = "/*[local-name()='" + pathKey + "']";
-            }
-
-            XPath xPath = XPathFactory.newInstance().newXPath();
-            NodeList nodeList = (NodeList) xPath.evaluate(pathKey, document, XPathConstants.NODESET);
-            Node node = nodeList.item(0);
-            if (node.hasChildNodes()) {
-                if (node.getChildNodes().item(0) instanceof Text) {
-                    debug("TEXT: " + node.getTextContent());
-                    return node.getTextContent();
-                }
-                return new XmlPathItem(pathKey, document);
-            } else {
-                debug("RESULT: " + node.getTextContent());
-                return node.getTextContent();
-            }
-
-        } catch (Exception ex) {
-            throw new RuntimeException("Error reading the xml " + key, ex);
-        }
+        return XmlPathItem.getObject(document, xpath, key);
     }
 
     @Override
@@ -182,7 +139,7 @@ public class XmlObject extends AbstractDataObject implements Map {
 
     @Override
     public boolean containsKey(Object key) {
-        throw new UnsupportedOperationException("Not supported method for the object.");
+        return XmlPathItem.containsObject(document, xpath, key);
     }
 
     @Override

@@ -136,7 +136,7 @@ public class Generator {
         return document;
     }
 
-    public void generate(String namespace, String rootName, Map<String, Object> definition) {
+    public Document generate(String namespace, String rootName, Map<String, Object> definition) {
         QName rootElement;
         if (namespace == null) {
             rootElement = XMLUtil.getQName(xsModel, rootName);
@@ -171,6 +171,7 @@ public class Generator {
         } catch (SAXException ex) {
             throw new RuntimeException("Impossible error", ex);
         }
+        return document;
     }
 
     private void generate() {

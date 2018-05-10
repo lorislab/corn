@@ -13,29 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.lorislab.corn;
+package org.lorislab.corn.beans;
 
-import java.util.Date;
-import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 
-public class SystemBean {
+public class UUIDBean {
     
-    public Date getCURRENT_DATE() {
-        return new Date();
-    }
-    
-    public String getUUID() {
+    public String get() {
         return UUID.randomUUID().toString();
     }
     
-    public String string(int length) {
+    public String toString(int length) {
         return UUID.randomUUID().toString().substring(length);
     }
-    
-    public Object random(List data) {
-        int index = ThreadLocalRandom.current().nextInt(0, data.size());
-        return data.get(index);
-    }
+        
 }
