@@ -33,9 +33,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.dom.DOMResult;
 import nl.flotsam.xeger.Xeger;
-import org.apache.xerces.dom.DOMXSImplementationSourceImpl;
-import org.apache.xerces.impl.Constants;
-import org.apache.xerces.impl.xs.XSImplementationImpl;
 import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAttributeDeclaration;
@@ -58,11 +55,7 @@ import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
-import org.w3c.dom.DOMConfiguration;
-import org.w3c.dom.DOMErrorHandler;
 import org.w3c.dom.Document;
-import org.w3c.dom.bootstrap.DOMImplementationRegistry;
-import org.w3c.dom.ls.LSResourceResolver;
 import org.xml.sax.SAXException;
 
 public class Generator {
@@ -77,16 +70,11 @@ public class Generator {
 
     private String xsiSchemaLocation;
     private String xsiNoNamespaceSchemaLocation;
-        private boolean wsdl = false;
     private GeneratorConfig config;
 
     private Map<String, Integer> counters = new HashMap<>();
 
-    public Generator(List<String> xsds) {
-        this(new GeneratorConfig(), xsds);
-    }
-
-    public Generator(GeneratorConfig config, List<String> resources) {
+    public Generator(GeneratorConfig config, XSDDefinition xsdDefinition) {
         try {
             if (config == null) {
                 this.config = new GeneratorConfig();
@@ -97,35 +85,11 @@ public class Generator {
             document = db.newDocument();
             DOMResult output = new DOMResult(document);
             doc = new XMLDocument(output, true, 8, null);
-
-            XSLoader xsLoader = createXSLoader(null, null, false);
-            
-            List<String> xsds = new ArrayList<>(resources.size());
-            for (String item : resources) {
-                if (item.endsWith("wsdl")) {
-                    wsdl = true;
-                    String tmp = XMLUtil.wsdl2xsd(item);
-                    xsds.add(tmp);
-                } else {
-                    xsds.add(item);
-                }
-            }
-            String[] uris = xsds.toArray(new String[xsds.size()]);
-            xsModel = xsLoader.loadURIList(new StringListImpl(uris, uris.length));
-            if (xsModel == null) {
-                throw new RuntimeException("Couldn't load XMLSchema from " + Arrays.asList(uris));
-            }           
+            xsModel = xsdDefinition.getXsModel();
+                     
         } catch (Exception ex) {
             throw new RuntimeException("Impossible error", ex);
         }
-    }
-
-    public boolean isWsdl() {
-        return wsdl;
-    }
-    
-    protected Object evaluate(Object value) {
-        return value;
     }
 
     public GeneratorConfig getConfig() {
@@ -135,11 +99,11 @@ public class Generator {
     public Document getDocument() {
         return document;
     }
-
+    
     public Document generate(String namespace, String rootName, Map<String, Object> definition) {
         QName rootElement;
         if (namespace == null) {
-            rootElement = XMLUtil.getQName(xsModel, rootName);
+            rootElement = getQName(xsModel, rootName);
         } else {
             rootElement = new QName(namespace, rootName);
         }
@@ -322,14 +286,13 @@ public class Generator {
                                                     if (t instanceof Map) {
                                                         definition = (Map<String, Object>) t;
                                                     } else {
-                                                        value = evaluate(t);
+                                                        value = t;
                                                     }
                                                     stack.push(new StackItem(term, item, term.getName(), definition, value));
                                                     add = true;
                                                 }                                                
                                             } else {
-                                                Object value = evaluate(val);
-                                                stack.push(new StackItem(term, item, term.getName(), null, value));
+                                                stack.push(new StackItem(term, item, term.getName(), null, val));
                                                 add = true;
                                             }
                                         }
@@ -400,33 +363,6 @@ public class Generator {
         } catch (Exception ex) {
             throw new RuntimeException("This is impossible", ex);
         }
-    }
-
-    private static XSLoader createXSLoader(LSResourceResolver entityResolver, DOMErrorHandler errorHandler, boolean enableSchema11) {
-        System.setProperty(DOMImplementationRegistry.PROPERTY, DOMXSImplementationSourceImpl.class.getName());
-        DOMImplementationRegistry registry;
-        try {
-            registry = DOMImplementationRegistry.newInstance();
-        } catch (Exception ex) {
-            throw new RuntimeException("Imposible error", ex);
-        }
-        XSImplementationImpl xsImpl = (XSImplementationImpl) registry.getDOMImplementation("XS-Loader");
-
-        XSLoader xsLoader = xsImpl.createXSLoader(null);
-        DOMConfiguration config = xsLoader.getConfig();
-        config.setParameter(Constants.DOM_VALIDATE, Boolean.TRUE);
-
-        if (entityResolver != null) {
-            config.setParameter(Constants.DOM_RESOURCE_RESOLVER, entityResolver);
-        }
-
-        if (errorHandler != null) {
-            config.setParameter(Constants.DOM_ERROR_HANDLER, errorHandler);
-        }
-        if (enableSchema11) {
-            config.setParameter(Constants.XERCES_PROPERTY_PREFIX + "validation/schema/version", "http://www.w3.org/XML/XMLSchema/v1.1");
-        }
-        return xsLoader;
     }
 
     private void addXSILocations() throws SAXException {
@@ -688,14 +624,14 @@ public class Generator {
         }
 
         if ("date".equals(name)) {
-            return new SimpleDateFormat(config.XSD_DATE_FORMAT).format(new Date());
+            return new SimpleDateFormat(config.dateFormat).format(new Date());
         }
         if ("time".equals(name)) {
-            return new SimpleDateFormat(config.XSD_TIME_FORMAT).format(new Date());
+            return new SimpleDateFormat(config.timeFormat).format(new Date());
         }
         if ("datetime".equals(name)) {
             Date date = new Date();
-            return new SimpleDateFormat(config.XSD_DATE_FORMAT).format(date) + 'T' + new SimpleDateFormat(config.XSD_TIME_FORMAT).format(date);
+            return new SimpleDateFormat(config.dateFormat).format(date) + 'T' + new SimpleDateFormat(config.timeFormat).format(date);
         } else {
             Integer count = counters.get(hint);
             count = count == null ? 1 : ++count;
@@ -918,4 +854,18 @@ public class Generator {
         return enums;
     }
 
+    private static QName getQName(XSModel xsModel, String root) {
+        String namespace = null;
+        XSNamedMap m1 = xsModel.getComponents(XSConstants.ELEMENT_DECLARATION);
+        if (m1 != null) {
+            for (int i = 0; i < m1.getLength(); i++) {
+                XSObject o = m1.item(i);
+                if (root.equals(o.getName())) {
+                    namespace = o.getNamespace();
+                }
+            }
+        }
+        return new QName(namespace, root);
+    }
+    
 }

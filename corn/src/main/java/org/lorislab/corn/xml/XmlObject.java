@@ -23,11 +23,15 @@ import java.util.Map;
 import java.util.Set;
 import javax.xml.soap.MessageFactory;
 import javax.xml.soap.SOAPMessage;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import static jdk.nashorn.internal.objects.NativeRegExp.source;
 import org.lorislab.corn.js.Engine;
 import org.lorislab.corn.model.AbstractDataObject;
-import org.lorislab.corn.model.DataDefinition;
 import org.lorislab.corn.model.DataGeneratorItem;
 import org.w3c.dom.Document;
 
@@ -40,11 +44,14 @@ public class XmlObject extends AbstractDataObject implements Map {
     private String root;
 
     private String namespace;
-    
+
     private String xpath;
 
-    public XmlObject(DataDefinition definition, DataGeneratorItem output) {
-        super(definition, output);
+    private XSDDefinition xsdDefinition;
+
+    public XmlObject(XSDDefinition definition, DataGeneratorItem output) {
+        super(definition.getDefinition(), output);
+        this.xsdDefinition = definition;
     }
 
     public String getNamespace() {
@@ -75,29 +82,82 @@ public class XmlObject extends AbstractDataObject implements Map {
         } catch (Exception ex) {
             throw new RuntimeException("Error reading the xml model", ex);
         }
-        
-        GeneratorConfig config = new GeneratorConfig();
-        Map<String, Object> xc = this.output.config;
-        if (xc != null) {
-            Object maximumRecursionDepth = xc.get("maximumRecursionDepth");
-            if (maximumRecursionDepth instanceof Integer) {
-                config.maximumRecursionDepth = (Integer) maximumRecursionDepth;
-            }
-        }
-        Generator generator = new Generator(config, this.definition.xsds);
+
+        GeneratorConfig config = createGeneratorConfig(this.output.config);
+        Generator generator = new Generator(config, xsdDefinition);
         document = generator.generate(namespace, root, data);
-        
-        Path result = writeToFile(directory, generator.isWsdl());
-        XmlValidator.validate(result, definition.xsds);
-        
+
+        Path result = writeToFile(directory);
+        XmlValidator.validate(result, xsdDefinition);
+
         return result;
     }
 
-    private Path writeToFile(Path parent, boolean wsdl) {
+    private static GeneratorConfig createGeneratorConfig(Map<String, Object> data) {
+        GeneratorConfig config = new GeneratorConfig();
+        if (data == null || data.isEmpty()) {
+            return config;
+        }
+        Object tmp = data.get("xml-max-recursion-depth");
+        if (tmp instanceof Integer) {
+            config.maximumRecursionDepth = (Integer) tmp;
+        }
+        tmp = data.get("xml-max-elements");
+        if (tmp instanceof Integer) {
+            config.maximumElementsGenerated = (Integer) tmp;
+        }
+        tmp = data.get("xml-min-elements");
+        if (tmp instanceof Integer) {
+            config.minimumElementsGenerated = (Integer) tmp;
+        }
+        tmp = data.get("xml-max-list-items");
+        if (tmp instanceof Integer) {
+            config.maximumListItemsGenerated = (Integer) tmp;
+        }
+        tmp = data.get("xml-min-list-items");
+        if (tmp instanceof Integer) {
+            config.minimumListItemsGenerated = (Integer) tmp;
+        }
+        tmp = data.get("xml-date-format");
+        if (tmp instanceof String) {
+            config.dateFormat = (String) tmp;
+        }
+        tmp = data.get("xml-time-format");
+        if (tmp instanceof String) {
+            config.timeFormat = (String) tmp;
+        }
+        tmp = data.get("xml-all-choices");
+        if (tmp instanceof Boolean) {
+            config.generateAllChoices = (Boolean) tmp;
+        }
+        tmp = data.get("xml-optional-attributes");
+        if (tmp instanceof Boolean) {
+            config.generateOptionalAttributes = (Boolean) tmp;
+        }
+        tmp = data.get("xml-fixed-attributes");
+        if (tmp instanceof Boolean) {
+            config.generateFixedAttributes = (Boolean) tmp;
+        }
+        tmp = data.get("xml-default-attributes");
+        if (tmp instanceof Boolean) {
+            config.generateDefaultAttributes = (Boolean) tmp;
+        }
+        tmp = data.get("xml-optional-elements");
+        if (tmp instanceof Boolean) {
+            config.generateOptionalElements = (Boolean) tmp;
+        }
+        tmp = data.get("xml-default-elements-value");
+        if (tmp instanceof Boolean) {
+            config.generateDefaultElementValues = (Boolean) tmp;
+        }
+        return config;
+    }
+
+    private Path writeToFile(Path parent) {
         Path path = parent.resolve(fileName);
         try {
             Source sc;
-            if (wsdl) {
+            if (xsdDefinition.isWsdl()) {
                 SOAPMessage soapMessage = MessageFactory.newInstance().createMessage();
                 soapMessage.getSOAPBody().addDocument(document);
 
@@ -112,7 +172,11 @@ public class XmlObject extends AbstractDataObject implements Map {
             }
 
             try (BufferedWriter writer = Files.newBufferedWriter(path)) {
-                XMLUtil.write(sc, writer);
+                TransformerFactory tf = TransformerFactory.newInstance();
+                Transformer t = tf.newTransformer();
+                t.setOutputProperty(OutputKeys.INDENT, "yes");
+                t.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+                t.transform(sc, new StreamResult(writer));
             } catch (Exception ex) {
                 throw new RuntimeException("Error write XML ", ex);
             }

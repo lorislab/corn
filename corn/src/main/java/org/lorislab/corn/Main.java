@@ -17,6 +17,7 @@ package org.lorislab.corn;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import static org.lorislab.corn.log.Logger.debug;
@@ -30,6 +31,7 @@ import org.lorislab.corn.csv.CSVObject;
 import org.lorislab.corn.model.AbstractDataObject;
 import org.lorislab.corn.model.CornConfig;
 import org.lorislab.corn.model.DataGeneratorItem;
+import org.lorislab.corn.xml.XSDDefinition;
 import org.lorislab.corn.xml.XmlObject;
 
 public class Main {
@@ -38,6 +40,8 @@ public class Main {
 
     private static final String SUBLEVEL_PREFIX = "  ";
 
+    private static final Map<String, XSDDefinition> XSD_DEFINITIONS = new HashMap<>();
+    
     public static void main(String[] args) throws Exception {
         
         CornConfig config = DataLoader.loadConfig("def/corn.json");
@@ -97,12 +101,19 @@ public class Main {
                 if (def != null) {
                     
                     AbstractDataObject object = null;                    
-                    if (def.xsds != null && !def.xsds.isEmpty()) {                                        
-                        object = new XmlObject(def, item);
+                    if (def.xsds != null && !def.xsds.isEmpty()) {  
+                        
+                        XSDDefinition xsdDef = XSD_DEFINITIONS.get(def.name);
+                        if (xsdDef == null) {
+                            xsdDef = new XSDDefinition(def);
+                            XSD_DEFINITIONS.put(def.name, xsdDef);
+                        }
+                        
+                        object = new XmlObject(xsdDef, item);
                     } else if (def.columns != null && !def.columns.isEmpty()) {
                         object = new CSVObject(def, item);
                     } else {
-                        info("Could not found the definition type xmls or csv base on the attributes [xsds.columns] for the name " + item.definition);
+                        info("Could not found the definition type xmls or csv base on the attributes [xsds | columns] for the name " + item.definition);
                     }
                     
                     if (object != null) {                        

@@ -21,9 +21,9 @@ package org.lorislab.corn.xml;
  */
 public class GeneratorConfig {
     
-    public String XSD_DATE_FORMAT = "yyyy-MM-dd";
+    public String dateFormat = "yyyy-MM-dd";
     
-    public String XSD_TIME_FORMAT = "HH:mm:ss";
+    public String timeFormat = "HH:mm:ss";
     
     public boolean generateAllChoices = false;
     
