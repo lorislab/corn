@@ -19,13 +19,18 @@ import java.util.UUID;
 
 public class UUIDBean {
     
-    public String get() {
+    public String random() {
         return UUID.randomUUID().toString();
     }
     
-    public String toString(int length) {
-        String result = get().substring(0, length);
+    public String random(int length) {
+        String result = random().substring(0, length);
         return result;
     }
-        
+    
+    public String toString(int length) {
+        String result = random().substring(0, length);
+        return result;
+    }
+
 }
