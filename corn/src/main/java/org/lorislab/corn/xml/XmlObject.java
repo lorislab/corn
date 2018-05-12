@@ -29,7 +29,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import static jdk.nashorn.internal.objects.NativeRegExp.source;
 import org.lorislab.corn.js.Engine;
 import org.lorislab.corn.model.AbstractDataObject;
 import org.lorislab.corn.model.DataGeneratorItem;

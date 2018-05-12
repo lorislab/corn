@@ -33,7 +33,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.dom.DOMResult;
 import nl.flotsam.xeger.Xeger;
-import org.apache.xerces.impl.xs.util.StringListImpl;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSAttributeDeclaration;
 import org.apache.xerces.xs.XSAttributeUse;
@@ -41,7 +40,6 @@ import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSConstants;
 import org.apache.xerces.xs.XSElementDeclaration;
 import org.apache.xerces.xs.XSFacet;
-import org.apache.xerces.xs.XSLoader;
 import org.apache.xerces.xs.XSModel;
 import org.apache.xerces.xs.XSModelGroup;
 import org.apache.xerces.xs.XSMultiValueFacet;
@@ -147,7 +145,6 @@ public class Generator {
                 boolean notMacRecursion = !(item.getDefinitionLevel() > config.maximumRecursionDepth);
 //                XSObject oo = (XSObject) elem;
 //                System.out.println(oo.getName());
-                    
                 if (!item.isFirst()) {
 
                     item.setFirst(true);

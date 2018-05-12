@@ -24,13 +24,16 @@ import javax.xml.validation.SchemaFactory;
 import org.apache.xerces.dom.DOMXSImplementationSourceImpl;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.XSImplementationImpl;
+import org.apache.xerces.impl.xs.util.LSInputListImpl;
 import org.apache.xerces.impl.xs.util.StringListImpl;
+import org.apache.xerces.xs.LSInputList;
 import org.apache.xerces.xs.XSLoader;
 import org.apache.xerces.xs.XSModel;
 import org.lorislab.corn.model.DataDefinition;
 import org.w3c.dom.DOMConfiguration;
 import org.w3c.dom.DOMErrorHandler;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
+import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 
 /**
@@ -62,13 +65,14 @@ public class XSDDefinition {
         }
         
         List<Source> tmp = new ArrayList<>(xsdResources.size());
-        List<String> tmp2 = new ArrayList<>(xsdResources.size());
+        List<LSInput> tmp2 = new ArrayList<>(xsdResources.size());
         for (XSDResource r : xsdResources) {
+            wsdl = wsdl || r.isWsdl();
             tmp.add(r.getSource());
-            tmp2.add(r.getXsdUri());
+            tmp2.add(r.getLSInput());
         }
         Source[] result = tmp.toArray(new Source[tmp.size()]);
-        String[] uris = tmp2.toArray(new String[tmp2.size()]);
+        LSInput[] uris = tmp2.toArray(new LSInput[tmp2.size()]);
         
         try {
             schema = SF.newSchema(result);
@@ -77,7 +81,8 @@ public class XSDDefinition {
         }
 
         XSLoader xsLoader = createXSLoader(null, null, false);
-        xsModel = xsLoader.loadURIList(new StringListImpl(uris, uris.length));
+        
+        xsModel = xsLoader.loadInputList(new LSInputListImpl(uris, uris.length));
         if (xsModel == null) {
             throw new RuntimeException("Couldn't load XMLSchema from " + Arrays.asList(uris));
         }

@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -37,11 +38,13 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import org.apache.xerces.dom.DOMInputImpl;
 import static org.lorislab.corn.log.Logger.error;
 import static org.lorislab.corn.log.Logger.info;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.ls.LSInput;
 
 /**
  *
@@ -53,8 +56,6 @@ public class XSDResource {
 
     private String xsdUri;
 
-    private String uri;
-
     private boolean wsdl;
 
     private boolean classpath;
@@ -62,37 +63,40 @@ public class XSDResource {
     public XSDResource(String tmp) {
         classpath = false;
         path = tmp;
-        uri = tmp;
+        xsdUri = tmp;
         try {
             wsdl = path.endsWith(".wsdl");
             if (!Files.exists(Paths.get(path))) {
                 URL url = XSDResource.class.getResource(path);
                 if (url != null) {
-                    uri = url.toURI().toString();
+                    xsdUri = url.toURI().toString();
                     classpath = true;
                 } else {
                     error("The XSD could not be found on the file system or classpath. XSD: " + path);
                     throw new RuntimeException("The XSD could not be found. xsd: " + path);
                 }
             }
-            info("XSD found in: " + uri);
-
-            if (wsdl) {
-                xsdUri = wsdl2xsd(uri);
-                info("Create XSD for the WSDL in: " + xsdUri);
-            } else {
-                xsdUri = uri;
-            }
+            info("XSD found in: " + xsdUri);
         } catch (Exception ex) {
             throw new RuntimeException("Error reading the xsd definition for " + path, ex);
         }
+    }
+
+    public LSInput getLSInput() {
+        if (wsdl) {
+            String tmp = wsdl2xsd(xsdUri);
+            LSInput result = new DOMInputImpl(null, xsdUri, null, tmp, "UTF-16");
+            return result;
+        }
+        LSInput result = new DOMInputImpl(null, xsdUri, null);
+        return result;
     }
 
     public Source getSource() {
         try {
             Source tmp;
             if (wsdl) {
-                tmp = loadWsdlSource(uri);
+                tmp = loadWsdlSource(xsdUri);
             } else {
                 InputStream in;
                 if (classpath) {
@@ -146,38 +150,43 @@ public class XSDResource {
         return null;
     }
 
-    public static String wsdl2xsd(String resource) throws Exception {
-        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-        Document doc = docBuilder.newDocument();
+    public static String wsdl2xsd(String resource) {
+        try {
+            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+            Document doc = docBuilder.newDocument();
 
-        Definition definition = loadDefinition(resource);
+            Definition definition = loadDefinition(resource);
 
-        if (definition.getTypes() != null) {
-            for (Object o : definition.getTypes().getExtensibilityElements()) {
-                if (o instanceof javax.wsdl.extensions.schema.Schema) {
-                    Element ele = ((javax.wsdl.extensions.schema.Schema) o).getElement();
-                    Node newNode = doc.importNode(ele, true);
-                    doc.appendChild(newNode);
+            if (definition.getTypes() != null) {
+                for (Object o : definition.getTypes().getExtensibilityElements()) {
+                    if (o instanceof javax.wsdl.extensions.schema.Schema) {
+                        Element ele = ((javax.wsdl.extensions.schema.Schema) o).getElement();
+                        Node newNode = doc.importNode(ele, true);
+                        doc.appendChild(newNode);
+                    }
                 }
             }
-        }
-        Map<String, String> ns = definition.getNamespaces();
-        if (ns != null) {
-            for (Entry<String, String> e : ns.entrySet()) {
-                if (e.getKey() != null && !e.getKey().isEmpty()) {
-                    doc.getDocumentElement().setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, "xmlns:" + e.getKey(), e.getValue());
+            Map<String, String> ns = definition.getNamespaces();
+            if (ns != null) {
+                for (Entry<String, String> e : ns.entrySet()) {
+                    if (e.getKey() != null && !e.getKey().isEmpty()) {
+                        doc.getDocumentElement().setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, "xmlns:" + e.getKey(), e.getValue());
+                    }
                 }
             }
-        }
 
-        File tmp = File.createTempFile(resource, "xsd");
-        TransformerFactory tf = TransformerFactory.newInstance();
-        Transformer t = tf.newTransformer();
-        t.setOutputProperty(OutputKeys.INDENT, "yes");
-        t.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-        t.transform(new DOMSource(doc), new StreamResult(tmp));
-        return tmp.getAbsolutePath();
+            StringWriter writer = new StringWriter();
+            TransformerFactory tf = TransformerFactory.newInstance();
+            Transformer t = tf.newTransformer();
+//            t.setOutputProperty(OutputKeys.INDENT, "yes");
+//            t.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            t.transform(new DOMSource(doc), new StreamResult(writer));
+            
+            return writer.toString();
+        } catch (Exception ex) {
+            throw new RuntimeException("Error loading the XSD from the WSLD schema.", ex);
+        }
     }
 
 }
