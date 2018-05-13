@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import org.lorislab.corn.js.Engine;
+import static org.lorislab.corn.log.Logger.debug;
+import static org.lorislab.corn.log.Logger.error;
+import static org.lorislab.corn.log.Logger.info;
 import org.lorislab.corn.model.AbstractDataObject;
 import org.lorislab.corn.model.DataDefinition;
 import org.lorislab.corn.model.DataGeneratorItem;
@@ -64,22 +67,34 @@ public class CSVObject extends AbstractDataObject implements List {
         return path;
     }
 
+    private void scriptObject(String attribute) {
+        error("Missing '" + attribute + "' attribute in the script object!");
+        info("The script object for the CSV generator muss have this format: ");
+        info("result = {");
+        info("   \"file\": \"output_file_name is mandatory\",");
+        info("   \"data\": \"list_of_objects is mandatory\",");
+        info("}");
+        throw new RuntimeException("Wrong script object!");
+    }
+
     @Override
-    public Path generate(Path directory, Engine engine) {
-        try {
-            Map<String, Object> tmp = engine.evalFile(output.js);
-            fileName = (String) tmp.get("file");
-            data = (List<Map<String, Object>>) tmp.get("data");
-        } catch (Exception ex) {
-            throw new RuntimeException("Error loading the csv data", ex);
+    public Path generate(Path directory, Map<String, Object> tmp) {
+        fileName = (String) tmp.get("file");
+        if (fileName == null || fileName.isEmpty()) {
+            scriptObject("file");
         }
+        data = (List<Map<String, Object>>) tmp.get("data");
+        if (data == null || data.isEmpty()) {
+            scriptObject("data");
+        }
+
         return writeToFile(directory);
     }
 
     public int getSize() {
         return size();
     }
-    
+
     @Override
     public int size() {
         return data.size();

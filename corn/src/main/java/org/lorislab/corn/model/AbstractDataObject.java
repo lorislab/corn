@@ -16,6 +16,7 @@
 package org.lorislab.corn.model;
 
 import java.nio.file.Path;
+import java.util.Map;
 import org.lorislab.corn.js.Engine;
 
 /**
@@ -35,7 +36,7 @@ public abstract class AbstractDataObject {
         this.output = output;
     }
 
-    public abstract Path generate(Path directory, Engine engine);
+    public abstract Path generate(Path directory, Map<String, Object> data);
     
     public DataGeneratorItem getOutput() {
         return output;

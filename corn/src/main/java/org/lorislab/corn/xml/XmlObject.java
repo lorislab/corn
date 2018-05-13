@@ -30,7 +30,8 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import org.lorislab.corn.js.Engine;
+import static org.lorislab.corn.log.Logger.error;
+import static org.lorislab.corn.log.Logger.info;
 import org.lorislab.corn.model.AbstractDataObject;
 import org.lorislab.corn.model.DataGeneratorItem;
 import org.w3c.dom.Document;
@@ -70,18 +71,35 @@ public class XmlObject extends AbstractDataObject implements Map {
         return document;
     }
 
+    private void scriptObject(String attribute) {
+        error("Missing '" + attribute + "' attribute in the script object!");
+        info("The script object for the XML generator muss have this format: ");
+        info("result = {");
+        info("   \"file\": \"output_file_name is mandatory\",");
+        info("   \"root\": \"xml_root_name is mandatory\",");
+        info("   \"namespace\": \"xml_root_namespace is optional\",");
+        info("   \"data\": \"xml_structure is mandatory\",");
+        info("}");
+        throw new RuntimeException("Wrong script object!");
+    }
+
     @Override
-    public Path generate(Path directory, Engine engine) {
-        try {
-            Map<String, Object> tmp = engine.evalFile(output.js);
-            fileName = (String) tmp.get("file");
-            root = (String) tmp.get("root");
-            namespace = (String) tmp.get("namespace");
-            data = (Map<String, Object>) tmp.get("data");
-            xpath = XmlPathItem.createXPath("", root);
-        } catch (Exception ex) {
-            throw new RuntimeException("Error reading the xml model", ex);
+    public Path generate(Path directory, Map<String, Object> data) {
+        fileName = (String) data.get("file");
+        if (fileName == null || fileName.isEmpty()) {
+            scriptObject("file");
         }
+        root = (String) data.get("root");
+        if (fileName == null || fileName.isEmpty()) {
+            scriptObject("file");
+        }
+        data = (Map<String, Object>) data.get("data");
+        if (data == null || data.isEmpty()) {
+            scriptObject("data");
+        }
+        
+        namespace = (String) data.get("namespace");
+        xpath = XmlPathItem.createXPath("", root);
 
         GeneratorConfig config = createGeneratorConfig(this.output.config);
         Generator generator = new Generator(config, xsdDefinition);
