@@ -16,6 +16,7 @@
 package org.lorislab.corn.xml;
 
 import java.io.BufferedWriter;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
@@ -98,24 +99,24 @@ public class XmlObject extends AbstractDataObject implements Map {
             return config;
         }
         Object tmp = data.get("xml-max-recursion-depth");
-        if (tmp instanceof Integer) {
-            config.maximumRecursionDepth = (Integer) tmp;
+        if (tmp instanceof BigDecimal) {
+            config.maximumRecursionDepth = ((BigDecimal) tmp).intValue();
         }
         tmp = data.get("xml-max-elements");
-        if (tmp instanceof Integer) {
-            config.maximumElementsGenerated = (Integer) tmp;
+        if (tmp instanceof BigDecimal) {
+            config.maximumElementsGenerated = ((BigDecimal) tmp).intValue();
         }
         tmp = data.get("xml-min-elements");
-        if (tmp instanceof Integer) {
-            config.minimumElementsGenerated = (Integer) tmp;
+        if (tmp instanceof BigDecimal) {
+            config.minimumElementsGenerated = ((BigDecimal) tmp).intValue();
         }
         tmp = data.get("xml-max-list-items");
-        if (tmp instanceof Integer) {
-            config.maximumListItemsGenerated = (Integer) tmp;
+        if (tmp instanceof BigDecimal) {
+            config.maximumListItemsGenerated = ((BigDecimal) tmp).intValue();
         }
         tmp = data.get("xml-min-list-items");
-        if (tmp instanceof Integer) {
-            config.minimumListItemsGenerated = (Integer) tmp;
+        if (tmp instanceof BigDecimal) {
+            config.minimumListItemsGenerated = ((BigDecimal) tmp).intValue();
         }
         tmp = data.get("xml-date-format");
         if (tmp instanceof String) {

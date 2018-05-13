@@ -15,9 +15,7 @@
  */
 package org.lorislab.corn.xml;
 
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URL;
@@ -31,7 +29,6 @@ import javax.wsdl.xml.WSDLReader;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -39,8 +36,8 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import org.apache.xerces.dom.DOMInputImpl;
+import static org.lorislab.corn.log.Logger.debug;
 import static org.lorislab.corn.log.Logger.error;
-import static org.lorislab.corn.log.Logger.info;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -76,7 +73,7 @@ public class XSDResource {
                     throw new RuntimeException("The XSD could not be found. xsd: " + path);
                 }
             }
-            info("XSD found in: " + xsdUri);
+            debug("XSD found in: " + xsdUri);
         } catch (Exception ex) {
             throw new RuntimeException("Error reading the xsd definition for " + path, ex);
         }

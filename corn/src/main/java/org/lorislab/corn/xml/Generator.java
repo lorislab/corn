@@ -53,6 +53,7 @@ import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
+import static org.lorislab.corn.log.Logger.debug;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -143,8 +144,9 @@ public class Generator {
                 Object elem = item.getData();
 
                 boolean notMacRecursion = !(item.getDefinitionLevel() > config.maximumRecursionDepth);
-//                XSObject oo = (XSObject) elem;
-//                System.out.println(oo.getName());
+                XSObject oo = (XSObject) elem;
+                debug(oo.getName());
+                
                 if (!item.isFirst()) {
 
                     item.setFirst(true);

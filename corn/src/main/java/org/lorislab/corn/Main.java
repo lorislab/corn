@@ -95,7 +95,7 @@ public class Main {
             for (DataGeneratorItem item : data.items) {
 
                 engine.add(data.index, i);
-                info(prefix + "[" + i + "] " + item.name + " {" );
+                info(prefix + "[" + data.index + ":" + i + "] " + item.name + " {" );
                 
                 DataDefinition def = definitions.get(item.definition);
                 if (def != null) {
