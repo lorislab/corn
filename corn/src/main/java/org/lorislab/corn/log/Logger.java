@@ -17,7 +17,7 @@ package org.lorislab.corn.log;
 
 public class Logger {
     
-    public static boolean DEBUG = false;
+    public static boolean DEBUG = true;
     
     public static void info(Object message) {
         System.out.println(message);

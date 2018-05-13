@@ -144,8 +144,8 @@ public class Generator {
                 Object elem = item.getData();
 
                 boolean notMacRecursion = !(item.getDefinitionLevel() > config.maximumRecursionDepth);
-                XSObject oo = (XSObject) elem;
-                debug(oo.getName());
+//                XSObject oo = (XSObject) elem;
+//                debug(oo.getName());
                 
                 if (!item.isFirst()) {
 

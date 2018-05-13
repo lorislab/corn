@@ -101,7 +101,7 @@ public class XSDResource {
                 } else {
                     in = new FileInputStream(xsdUri);
                 }
-                tmp = new StreamSource(in, path);
+                tmp = new StreamSource(in, xsdUri);
             }
             return tmp;
         } catch (Exception e) {

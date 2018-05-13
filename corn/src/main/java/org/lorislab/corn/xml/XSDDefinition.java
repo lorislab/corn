@@ -21,20 +21,14 @@ import java.util.List;
 import javax.xml.transform.Source;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import org.apache.xerces.dom.DOMXSImplementationSourceImpl;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.XSImplementationImpl;
 import org.apache.xerces.impl.xs.util.LSInputListImpl;
-import org.apache.xerces.impl.xs.util.StringListImpl;
-import org.apache.xerces.xs.LSInputList;
 import org.apache.xerces.xs.XSLoader;
 import org.apache.xerces.xs.XSModel;
 import org.lorislab.corn.model.DataDefinition;
-import org.w3c.dom.DOMConfiguration;
-import org.w3c.dom.DOMErrorHandler;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.w3c.dom.ls.LSInput;
-import org.w3c.dom.ls.LSResourceResolver;
 
 /**
  *
@@ -42,8 +36,21 @@ import org.w3c.dom.ls.LSResourceResolver;
  */
 public class XSDDefinition {
 
-    private static SchemaFactory SF = SchemaFactory.newInstance(javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI);
+    private static final SchemaFactory SF = SchemaFactory.newInstance(javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
+    private static final DOMImplementationRegistry DOM_REGISTRY;
+    
+    private static final XSImplementationImpl XS_IMPL;
+    
+    static {
+        try {
+            DOM_REGISTRY = DOMImplementationRegistry.newInstance();
+        } catch (Exception ex) {
+            throw new RuntimeException("Error creating the DOM implementation registry instance", ex);
+        }
+        XS_IMPL = (XSImplementationImpl) DOM_REGISTRY.getDOMImplementation("XS-Loader");
+    }
+    
     private boolean wsdl;
 
     private final DataDefinition definition;
@@ -77,10 +84,11 @@ public class XSDDefinition {
         try {
             schema = SF.newSchema(result);
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            throw new RuntimeException("Error create schema for the XSD definition", ex);
         }
 
-        XSLoader xsLoader = createXSLoader(null, null, false);
+        XSLoader xsLoader = XS_IMPL.createXSLoader(null);
+        xsLoader.getConfig().setParameter(Constants.DOM_VALIDATE, Boolean.TRUE);
         
         xsModel = xsLoader.loadInputList(new LSInputListImpl(uris, uris.length));
         if (xsModel == null) {
@@ -112,30 +120,4 @@ public class XSDDefinition {
         return xsdResources.isEmpty();
     }
 
-    private static XSLoader createXSLoader(LSResourceResolver entityResolver, DOMErrorHandler errorHandler, boolean enableSchema11) {
-        System.setProperty(DOMImplementationRegistry.PROPERTY, DOMXSImplementationSourceImpl.class.getName());
-        DOMImplementationRegistry registry;
-        try {
-            registry = DOMImplementationRegistry.newInstance();
-        } catch (Exception ex) {
-            throw new RuntimeException("Imposible error", ex);
-        }
-        XSImplementationImpl xsImpl = (XSImplementationImpl) registry.getDOMImplementation("XS-Loader");
-
-        XSLoader xsLoader = xsImpl.createXSLoader(null);
-        DOMConfiguration config = xsLoader.getConfig();
-        config.setParameter(Constants.DOM_VALIDATE, Boolean.TRUE);
-
-        if (entityResolver != null) {
-            config.setParameter(Constants.DOM_RESOURCE_RESOLVER, entityResolver);
-        }
-
-        if (errorHandler != null) {
-            config.setParameter(Constants.DOM_ERROR_HANDLER, errorHandler);
-        }
-        if (enableSchema11) {
-            config.setParameter(Constants.XERCES_PROPERTY_PREFIX + "validation/schema/version", "http://www.w3.org/XML/XMLSchema/v1.1");
-        }
-        return xsLoader;
-    }
 }
