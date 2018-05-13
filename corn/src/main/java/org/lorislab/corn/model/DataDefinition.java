@@ -20,13 +20,21 @@ import java.util.List;
 public class DataDefinition {
 
     public String name;
-    
+
     public String version;
+
+    public Csv csv;
     
-    public String separator;
-        
-    public List<String> xsds;
+    public Xml xml;
     
-    public List<String> columns;
-    
+    public static class Csv {
+
+        public List<String> columns;
+        public String separator;
+    }
+
+    public static class Xml {
+
+        public List<String> xsds;
+    }
 }

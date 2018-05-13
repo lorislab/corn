@@ -49,17 +49,17 @@ public class Corn {
     private final CornConfig config;
 
     private final Path target;
-    
+
     private final Map<String, DataDefinition> definitions;
-    
+
     private final Engine engine;
-    
+
     private final DataGenerator generator;
-    
+
     public Corn(String config) {
         this(DataLoader.loadConfig(config));
     }
-    
+
     public Corn(CornConfig config) {
         this.config = config;
         engine = new Engine();
@@ -70,7 +70,7 @@ public class Corn {
 
     public void generate() throws Exception {
         if (!Files.exists(target)) {
-             Files.createDirectories(target);
+            Files.createDirectories(target);
         }
 
         info("Beans {");
@@ -122,7 +122,10 @@ public class Corn {
                 if (def != null) {
 
                     AbstractDataObject object = null;
-                    if (def.xsds != null && !def.xsds.isEmpty()) {
+                    if (def.xml != null && def.csv != null) {
+                        throw new RuntimeException("Wrong definition. Only one of [ csv, xml ] muss be define.");
+                    }
+                    if (def.xml != null) {
 
                         XSDDefinition xsdDef = XSD_DEFINITIONS.get(def.name);
                         if (xsdDef == null) {
@@ -131,27 +134,26 @@ public class Corn {
                         }
 
                         object = new XmlObject(xsdDef, item);
-                    } else if (def.columns != null && !def.columns.isEmpty()) {
+                    } else if (def.csv != null) {
                         object = new CSVObject(def, item);
                     } else {
-                        info("Could not found the definition type xml or csv base on the attributes [xsds | columns] for the name " + item.definition);
+                        info("Could not found the definition type xml or csv base on the attributes [xml | csv] for the name " + item.definition);
+                        throw new RuntimeException("Wrong definition. Only one of [ csv, xml ] muss be define.");
                     }
 
-                    if (object != null) {
-                        engine.add(object.getOutput().name, object);
-                        Map<String, Object> tmp = null;
-                        try {
-                            tmp = engine.evalFile(object.getOutput().js);
-                        } catch (Exception ex) {
-                            throw new RuntimeException("Error executing the script for the step " + item.name, ex);
-                        }
-
-                        Path path = null;
-                        if (tmp != null && !tmp.isEmpty()) {
-                            path = object.generate(target, tmp);
-                        }
-                        info(prefix + SUBLEVEL_PREFIX + "file : " + path);
+                    engine.add(object.getOutput().name, object);
+                    Map<String, Object> tmp = null;
+                    try {
+                        tmp = engine.evalFile(object.getOutput().js);
+                    } catch (Exception ex) {
+                        throw new RuntimeException("Error executing the script for the step " + item.name, ex);
                     }
+
+                    Path path = null;
+                    if (tmp != null && !tmp.isEmpty()) {
+                        path = object.generate(target, tmp);
+                    }
+                    info(prefix + SUBLEVEL_PREFIX + "file : " + path);
 
                 } else {
                     info("Could not found the definition for the name " + item.definition);

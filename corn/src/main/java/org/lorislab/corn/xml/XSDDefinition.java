@@ -63,9 +63,9 @@ public class XSDDefinition {
 
     public XSDDefinition(DataDefinition definition) {
         this.definition = definition;
-        if (this.definition.xsds != null) {
-            xsdResources = new ArrayList<>(this.definition.xsds.size());
-            for (String xsd : definition.xsds) {
+        if (this.definition.xml.xsds != null) {
+            xsdResources = new ArrayList<>(this.definition.xml.xsds.size());
+            for (String xsd : definition.xml.xsds) {
                 XSDResource res = new XSDResource(xsd);
                 xsdResources.add(res);
             }

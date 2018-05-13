@@ -23,8 +23,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import org.lorislab.corn.js.Engine;
-import static org.lorislab.corn.log.Logger.debug;
 import static org.lorislab.corn.log.Logger.error;
 import static org.lorislab.corn.log.Logger.info;
 import org.lorislab.corn.model.AbstractDataObject;
@@ -51,12 +49,12 @@ public class CSVObject extends AbstractDataObject implements List {
         Path path = directory.resolve(fileName);
         try (BufferedWriter writer = Files.newBufferedWriter(path)) {
             for (Map<String, Object> row : data) {
-                for (String col : definition.columns) {
+                for (String col : definition.csv.columns) {
                     Object item = row.get(col);
                     if (item != null) {
                         writer.write(item.toString());
                     }
-                    writer.write(definition.separator);
+                    writer.write(definition.csv.separator);
                 }
                 writer.write('\n');
             }
