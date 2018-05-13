@@ -15,10 +15,15 @@
  */
 package org.lorislab.corn;
 
+/**
+ * The main class.
+ * 
+ * @author andrej
+ */
 public class Main {
-
+    
     public static void main(String[] args) throws Exception {
-        Corn corn = new Corn("def/corn.json");
+        Corn corn = new Corn(args[0]);
         corn.generate();
     }
 
