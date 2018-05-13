@@ -36,4 +36,16 @@
         </dependency>
     </dependencies>
       
+    <profiles>
+        <profile>
+            <id>test</id>
+            <dependencies>
+                <dependency>
+                    <groupId>test</groupId>
+                    <artifactId>test</artifactId>
+                    <version>1</version>
+                </dependency>                
+            </dependencies>
+        </profile>
+    </profiles>
 </project>
