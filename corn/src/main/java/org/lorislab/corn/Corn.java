@@ -118,6 +118,7 @@ public class Corn {
                 engine.add(data.index, i);
                 info(prefix + "[" + data.index + ":" + i + "] " + item.name + " {");
 
+                Path path = null;
                 DataDefinition def = definitions.get(item.definition);
                 if (def != null) {
 
@@ -149,7 +150,7 @@ public class Corn {
                         throw new RuntimeException("Error executing the script for the step " + item.name, ex);
                     }
 
-                    Path path = null;
+                    
                     if (tmp != null && !tmp.isEmpty()) {
                         path = object.generate(target, tmp);
                     }
@@ -159,7 +160,7 @@ public class Corn {
                     info("Could not found the definition for the name " + item.definition);
                 }
 
-                if (item.data != null) {
+                if (path != null && item.data != null) {
                     info(prefix + SUBLEVEL_PREFIX + "items : [");
                     generate(prefix + LEVEL_PREFIX, item.data);
                     info(prefix + SUBLEVEL_PREFIX + "]");
