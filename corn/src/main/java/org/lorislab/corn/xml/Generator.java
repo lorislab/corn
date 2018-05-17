@@ -269,6 +269,9 @@ public class Generator {
                                     if (def != null) {
                                                                               
                                         Object val = def.get(term.getName());
+                                        if ("xxx".equals(val)) {
+                                            System.out.println(val);
+                                        }
                                         if (val != null) {
                                             if (val instanceof Map) {
                                                 Map<String, Object> definition = (Map<String, Object>) val;
@@ -381,9 +384,14 @@ public class Generator {
                 doc.addText(elem.getValueConstraintValue().getNormalizedValue());
                 break;
             case XSConstants.VC_DEFAULT:
-                if (RandomUtil.randomBoolean(config.generateDefaultElementValues)) {
-                    doc.addText(elem.getValueConstraintValue().getNormalizedValue());
+                if (item.getValue() != null) {
+                    doc.addText("" + item.getValue());
                     break;
+                } else {
+                    if (RandomUtil.randomBoolean(config.generateDefaultElementValues)) {
+                        doc.addText(elem.getValueConstraintValue().getNormalizedValue());
+                        break;
+                    }
                 }
             default:
                 XSSimpleTypeDefinition simpleType = null;
