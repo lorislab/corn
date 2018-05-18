@@ -83,7 +83,7 @@ public class Engine {
     }
 
     public Map<String, Object> evalFile(String fileName) throws Exception {
-        Object tmp = getEngine().eval(new FileReader(fileName));        
+        Object tmp = getEngine().eval("load('" + fileName + "')");        
         return (Map<String, Object>) ScriptObjectMirror.wrapAsJSONCompatible(tmp, null);
     }
 }

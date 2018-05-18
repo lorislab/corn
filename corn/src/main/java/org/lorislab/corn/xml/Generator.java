@@ -53,7 +53,6 @@ import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
-import static org.lorislab.corn.log.Logger.debug;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
