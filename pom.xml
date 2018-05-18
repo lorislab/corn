@@ -33,9 +33,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com:lorislab/cron.git</connection>
-        <developerConnection>scm:git:git@github.com:lorislab/cron.git</developerConnection>
-        <url>https://github.com/lorislab/cron</url>
+        <connection>scm:git:git@github.com:lorislab/corn.git</connection>
+        <developerConnection>scm:git:git@github.com:lorislab/corn.git</developerConnection>
+        <url>https://github.com/lorislab/corn</url>
         <tag>corn-parent-1.0.0</tag>
     </scm>
     
