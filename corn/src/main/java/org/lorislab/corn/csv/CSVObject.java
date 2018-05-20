@@ -71,6 +71,7 @@ public class CSVObject extends AbstractDataObject implements List {
         info("result = {");
         info("   \"file\": \"output_file_name is mandatory\",");
         info("   \"data\": \"list_of_objects is mandatory\",");
+        info("   \"parameters\": \"parameters is optional\",");
         info("}");
         throw new RuntimeException("Wrong script object!");
     }

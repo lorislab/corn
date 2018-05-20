@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.lorislab.corn.csv.CSVObject;
 import org.lorislab.corn.js.Engine;
 import static org.lorislab.corn.log.Logger.debug;
@@ -153,6 +154,14 @@ public class Corn {
                     
                     if (tmp != null && !tmp.isEmpty()) {
                         path = object.generate(target, tmp);
+                        Map<String, Object> params = (Map<String, Object>) tmp.get("parameters");
+                        if (params != null) {
+                            for (Entry<String, Object> e : params.entrySet()) {
+                                if (e.getKey() != null && !e.getKey().isEmpty()) {
+                                    engine.add(e.getKey(), e.getValue());
+                                }
+                            }
+                        }
                     }
                     info(prefix + SUBLEVEL_PREFIX + "file : " + path);
 

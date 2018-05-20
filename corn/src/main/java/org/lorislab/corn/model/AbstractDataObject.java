@@ -17,7 +17,6 @@ package org.lorislab.corn.model;
 
 import java.nio.file.Path;
 import java.util.Map;
-import org.lorislab.corn.js.Engine;
 
 /**
  *

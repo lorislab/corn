@@ -79,6 +79,7 @@ public class XmlObject extends AbstractDataObject implements Map {
         info("   \"root\": \"xml_root_name is mandatory\",");
         info("   \"namespace\": \"xml_root_namespace is optional\",");
         info("   \"data\": \"xml_structure is mandatory\",");
+        info("   \"parameters\": \"parameters is optional\",");
         info("}");
         throw new RuntimeException("Wrong script object!");
     }
