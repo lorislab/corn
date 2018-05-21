@@ -71,32 +71,27 @@ public class XmlObject extends AbstractDataObject implements Map {
         return document;
     }
 
-    private void scriptObject(String attribute) {
-        error("Missing '" + attribute + "' attribute in the script object!");
-        info("The script object for the XML generator muss have this format: ");
-        info("result = {");
-        info("   \"file\": \"output_file_name is mandatory\",");
+    @Override
+    protected void addCustomAttribute() {  
         info("   \"root\": \"xml_root_name is mandatory\",");
         info("   \"namespace\": \"xml_root_namespace is optional\",");
         info("   \"data\": \"xml_structure is mandatory\",");
-        info("   \"parameters\": \"parameters is optional\",");
-        info("}");
-        throw new RuntimeException("Wrong script object!");
     }
 
     @Override
-    public Path generate(Path directory, Map<String, Object> data) {
-        fileName = (String) data.get("file");
-        if (fileName == null || fileName.isEmpty()) {
-            scriptObject("file");
-        }
+    protected void createData(Map<String, Object> data) {
+
         root = (String) data.get("root");
+        if (root == null || root.isEmpty()) {
+            missingAttribute("root");
+        }
+        
         if (fileName == null || fileName.isEmpty()) {
-            scriptObject("file");
+            missingAttribute("file");
         }
         data = (Map<String, Object>) data.get("data");
         if (data == null || data.isEmpty()) {
-            scriptObject("data");
+            missingAttribute("data");
         }
         
         namespace = (String) data.get("namespace");
@@ -105,13 +100,13 @@ public class XmlObject extends AbstractDataObject implements Map {
         GeneratorConfig config = createGeneratorConfig(this.output.config);
         Generator generator = new Generator(config, xsdDefinition);
         document = generator.generate(namespace, root, data);
-
-        Path result = writeToFile(directory);
-        XmlValidator.validate(result, xsdDefinition);
-
-        return result;
     }
 
+    @Override
+    protected void validation(Path path) {
+        XmlValidator.validate(path, xsdDefinition);
+    }
+    
     private static GeneratorConfig createGeneratorConfig(Map<String, Object> data) {
         GeneratorConfig config = new GeneratorConfig();
         if (data == null || data.isEmpty()) {
@@ -172,7 +167,8 @@ public class XmlObject extends AbstractDataObject implements Map {
         return config;
     }
 
-    private Path writeToFile(Path parent) {
+    @Override
+    protected Path writeToFile(Path parent) {
         Path path = parent.resolve(fileName);
         try {
             Source sc;

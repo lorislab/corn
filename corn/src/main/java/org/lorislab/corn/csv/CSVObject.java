@@ -45,7 +45,8 @@ public class CSVObject extends AbstractDataObject implements List {
         this.data = data;
     }
 
-    private Path writeToFile(Path directory) {
+    @Override
+    protected Path writeToFile(Path directory) {
         Path path = directory.resolve(fileName);
         try (BufferedWriter writer = Files.newBufferedWriter(path)) {
             for (Map<String, Object> row : data) {
@@ -65,29 +66,17 @@ public class CSVObject extends AbstractDataObject implements List {
         return path;
     }
 
-    private void scriptObject(String attribute) {
-        error("Missing '" + attribute + "' attribute in the script object!");
-        info("The script object for the CSV generator muss have this format: ");
-        info("result = {");
-        info("   \"file\": \"output_file_name is mandatory\",");
+    @Override
+    protected void addCustomAttribute() {        
         info("   \"data\": \"list_of_objects is mandatory\",");
-        info("   \"parameters\": \"parameters is optional\",");
-        info("}");
-        throw new RuntimeException("Wrong script object!");
     }
 
     @Override
-    public Path generate(Path directory, Map<String, Object> tmp) {
-        fileName = (String) tmp.get("file");
-        if (fileName == null || fileName.isEmpty()) {
-            scriptObject("file");
-        }
+    protected void createData(Map<String, Object> tmp) {
         data = (List<Map<String, Object>>) tmp.get("data");
         if (data == null || data.isEmpty()) {
-            scriptObject("data");
+            missingAttribute("data");
         }
-
-        return writeToFile(directory);
     }
 
     public int getSize() {
