@@ -23,18 +23,20 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import static org.lorislab.corn.log.Logger.error;
 import static org.lorislab.corn.log.Logger.info;
 import org.lorislab.corn.model.AbstractDataObject;
-import org.lorislab.corn.model.DataDefinition;
-import org.lorislab.corn.model.DataGeneratorItem;
 
 public class CSVObject extends AbstractDataObject implements List {
 
     private List<Map<String, Object>> data;
 
-    public CSVObject(DataDefinition definition, DataGeneratorItem output) {
-        super(definition, output);
+    private final List<String> columns;
+    
+    private final String separator;
+    
+    public CSVObject(List<String> columns, String separator) {
+        this.columns = columns;
+        this.separator = separator;
     }
 
     public List<Map<String, Object>> getData() {
@@ -50,12 +52,12 @@ public class CSVObject extends AbstractDataObject implements List {
         Path path = directory.resolve(fileName);
         try (BufferedWriter writer = Files.newBufferedWriter(path)) {
             for (Map<String, Object> row : data) {
-                for (String col : definition.csv.columns) {
+                for (String col : columns) {
                     Object item = row.get(col);
                     if (item != null) {
                         writer.write(item.toString());
                     }
-                    writer.write(definition.csv.separator);
+                    writer.write(separator);
                 }
                 writer.write('\n');
             }

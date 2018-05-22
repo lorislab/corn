@@ -16,9 +16,7 @@
 package org.lorislab.corn.model;
 
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Map;
-import static org.lorislab.corn.log.Logger.error;
 import static org.lorislab.corn.log.Logger.info;
 
 /**
@@ -29,25 +27,10 @@ public abstract class AbstractDataObject {
 
     protected String fileName;
 
-    protected final DataDefinition definition;
-
-    protected final DataGeneratorItem output;
-
-    protected final Map<String, Object> parameters = new HashMap<>();
-
-    public AbstractDataObject(DataDefinition definition, DataGeneratorItem output) {
-        this.definition = definition;
-        this.output = output;
-    }
-
     public Path generate(Path directory, Map<String, Object> data) {
         fileName = (String) data.get("file");
         if (fileName == null || fileName.isEmpty()) {
             missingAttribute("file");
-        }
-        Map<String, Object> params = (Map<String, Object>) data.get("parameters");
-        if (params != null && !params.isEmpty()) {
-            parameters.putAll(params);
         }
 
         createData(data);
@@ -55,7 +38,7 @@ public abstract class AbstractDataObject {
         Path path = writeToFile(directory);
         
         validation(path);
-        
+        info("Create a file : " + path);
         return path;
     }
 
@@ -80,20 +63,8 @@ public abstract class AbstractDataObject {
         // empty
     }
 
-    public DataGeneratorItem getOutput() {
-        return output;
-    }
-
-    public DataDefinition getDefinition() {
-        return definition;
-    }
-
     public String getFileName() {
         return fileName;
-    }
-
-    public Map<String, Object> getParameters() {
-        return parameters;
     }
 
 }

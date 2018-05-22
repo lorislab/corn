@@ -23,16 +23,11 @@ import java.util.Map;
  * @author andrej
  */
 public class CornConfig {
-   
+       
     /**
-     * The definition file
+     * The generator main
      */
-    public String definition;
-    
-    /**
-     * The generator file
-     */
-    public String generator;
+    public String run;
     
     /**
      * The target output directory
@@ -43,10 +38,5 @@ public class CornConfig {
      * The input parameters.
      */
     public Map<String, Object> parameters;
-    
-    /**
-     * The external beans
-     */
-    public Map<String, String> beans;
 
 }

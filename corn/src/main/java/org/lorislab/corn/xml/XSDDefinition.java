@@ -26,7 +26,7 @@ import org.apache.xerces.impl.xs.XSImplementationImpl;
 import org.apache.xerces.impl.xs.util.LSInputListImpl;
 import org.apache.xerces.xs.XSLoader;
 import org.apache.xerces.xs.XSModel;
-import org.lorislab.corn.model.DataDefinition;
+//import org.lorislab.corn.model.DataDefinition;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.w3c.dom.ls.LSInput;
 
@@ -53,19 +53,16 @@ public class XSDDefinition {
     
     private boolean wsdl;
 
-    private final DataDefinition definition;
-
     private List<XSDResource> xsdResources;
 
     private Schema schema;
 
     private XSModel xsModel;
 
-    public XSDDefinition(DataDefinition definition) {
-        this.definition = definition;
-        if (this.definition.xml.xsds != null) {
-            xsdResources = new ArrayList<>(this.definition.xml.xsds.size());
-            for (String xsd : definition.xml.xsds) {
+    public XSDDefinition(List<String> xsds) {
+        if (xsds != null) {
+            xsdResources = new ArrayList<>(xsds.size());
+            for (String xsd : xsds) {
                 XSDResource res = new XSDResource(xsd);
                 xsdResources.add(res);
             }
@@ -106,10 +103,6 @@ public class XSDDefinition {
 
     public boolean isWsdl() {
         return wsdl;
-    }
-
-    public DataDefinition getDefinition() {
-        return definition;
     }
 
     public List<XSDResource> getXsdResources() {

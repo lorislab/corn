@@ -33,7 +33,6 @@ import javax.xml.transform.stream.StreamResult;
 import static org.lorislab.corn.log.Logger.error;
 import static org.lorislab.corn.log.Logger.info;
 import org.lorislab.corn.model.AbstractDataObject;
-import org.lorislab.corn.model.DataGeneratorItem;
 import org.w3c.dom.Document;
 
 public class XmlObject extends AbstractDataObject implements Map {
@@ -50,8 +49,7 @@ public class XmlObject extends AbstractDataObject implements Map {
 
     private XSDDefinition xsdDefinition;
 
-    public XmlObject(XSDDefinition definition, DataGeneratorItem output) {
-        super(definition.getDefinition(), output);
+    public XmlObject(XSDDefinition definition) {
         this.xsdDefinition = definition;
     }
 
@@ -97,7 +95,8 @@ public class XmlObject extends AbstractDataObject implements Map {
         namespace = (String) data.get("namespace");
         xpath = XmlPathItem.createXPath("", root);
 
-        GeneratorConfig config = createGeneratorConfig(this.output.config);
+        Map<String, Object> c = (Map<String, Object>) data.get("config");
+        GeneratorConfig config = createGeneratorConfig(c);
         Generator generator = new Generator(config, xsdDefinition);
         document = generator.generate(namespace, root, data);
     }
