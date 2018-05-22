@@ -20,12 +20,9 @@ import java.io.FileReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import static org.lorislab.corn.log.Logger.info;
-import org.lorislab.corn.model.CornConfig;
 
 /**
  *
@@ -60,16 +57,16 @@ public class Corn {
         ScriptEngine engine = mgr.getEngineByName("nashorn");
 
         engine.put("parameters", config.parameters);
-        info("Parameters {");
+        System.out.println("Parameters {");
         if (config.parameters != null && !config.parameters.isEmpty()) {
             config.parameters.entrySet().stream().map((k) -> {
                 engine.put(k.getKey(), k.getValue());
                 return k;
             }).forEachOrdered((k) -> {
-                info(k.getKey() + " : " + k.getValue());
+                System.out.println(k.getKey() + " : " + k.getValue());
             });
         }
-        info("}");
+        System.out.println("}");
 
         try {
             engine.eval("load('" + config.run + "')");

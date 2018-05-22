@@ -18,6 +18,7 @@ package org.lorislab.corn.xml;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -36,8 +37,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import org.apache.xerces.dom.DOMInputImpl;
-import static org.lorislab.corn.log.Logger.debug;
-import static org.lorislab.corn.log.Logger.error;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -69,12 +68,11 @@ public class XSDResource {
                     xsdUri = url.toURI().toString();
                     classpath = true;
                 } else {
-                    error("The XSD could not be found on the file system or classpath. XSD: " + path);
+                    System.err.println("The XSD could not be found on the file system or classpath. XSD: " + path);
                     throw new RuntimeException("The XSD could not be found. xsd: " + path);
                 }
             }
-            debug("XSD found in: " + xsdUri);
-        } catch (Exception ex) {
+        } catch (RuntimeException | URISyntaxException ex) {
             throw new RuntimeException("Error reading the xsd definition for " + path, ex);
         }
     }

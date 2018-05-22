@@ -23,10 +23,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import static org.lorislab.corn.log.Logger.info;
-import org.lorislab.corn.model.AbstractDataObject;
+import org.lorislab.corn.AbstractObject;
 
-public class CSVObject extends AbstractDataObject implements List {
+public class CSVObject extends AbstractObject implements List {
 
     private List<Map<String, Object>> data;
 
@@ -70,7 +69,7 @@ public class CSVObject extends AbstractDataObject implements List {
 
     @Override
     protected void addCustomAttribute() {        
-        info("   \"data\": \"list_of_objects is mandatory\",");
+        System.out.println("   \"data\": \"list_of_objects is mandatory\",");
     }
 
     @Override

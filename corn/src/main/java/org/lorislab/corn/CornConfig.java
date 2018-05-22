@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.lorislab.corn.model;
+package org.lorislab.corn;
 
 import java.util.Map;
 

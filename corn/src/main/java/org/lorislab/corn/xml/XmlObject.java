@@ -30,12 +30,10 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import static org.lorislab.corn.log.Logger.error;
-import static org.lorislab.corn.log.Logger.info;
-import org.lorislab.corn.model.AbstractDataObject;
+import org.lorislab.corn.AbstractObject;
 import org.w3c.dom.Document;
 
-public class XmlObject extends AbstractDataObject implements Map {
+public class XmlObject extends AbstractObject implements Map {
 
     private Document document;
 
@@ -71,9 +69,9 @@ public class XmlObject extends AbstractDataObject implements Map {
 
     @Override
     protected void addCustomAttribute() {  
-        info("   \"root\": \"xml_root_name is mandatory\",");
-        info("   \"namespace\": \"xml_root_namespace is optional\",");
-        info("   \"data\": \"xml_structure is mandatory\",");
+        System.out.println("   \"root\": \"xml_root_name is mandatory\",");
+        System.out.println("   \"namespace\": \"xml_root_namespace is optional\",");
+        System.out.println("   \"data\": \"xml_structure is mandatory\",");
     }
 
     @Override

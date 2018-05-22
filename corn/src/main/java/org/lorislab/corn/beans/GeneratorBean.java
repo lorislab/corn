@@ -21,7 +21,6 @@ import java.util.Map;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.lorislab.corn.Corn;
 import org.lorislab.corn.csv.CSVObject;
-import static org.lorislab.corn.log.Logger.info;
 import org.lorislab.corn.xml.XSDDefinition;
 import org.lorislab.corn.xml.XmlObject;
 
