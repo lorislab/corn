@@ -30,25 +30,13 @@ import javax.script.ScriptException;
  */
 public class Corn {
 
-    private CornConfig config;
-
-    private static Path target;
-
-    public Corn(String config) {
-        this(loadConfig(config));
+    public void generate(String config) throws Exception {
+        generate(loadConfig(config));        
     }
+    
+    public void generate(CornConfig config) throws Exception {
 
-    public Corn(CornConfig config) {
-        this.config = config;
-        target = Paths.get(config.target);
-    }
-
-    public static Path getTarget() {
-        return target;
-    }
-
-    public void generate() throws Exception {
-
+        Path target = Paths.get(config.target);
         if (!Files.exists(target)) {
             Files.createDirectories(target);
         }
@@ -56,6 +44,7 @@ public class Corn {
         ScriptEngineManager mgr = new ScriptEngineManager();
         ScriptEngine engine = mgr.getEngineByName("nashorn");
 
+        engine.put("corn", config);
         engine.put("parameters", config.parameters);
         System.out.println("Parameters {");
         if (config.parameters != null && !config.parameters.isEmpty()) {

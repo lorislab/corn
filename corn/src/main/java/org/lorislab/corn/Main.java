@@ -23,8 +23,8 @@ package org.lorislab.corn;
 public class Main {
     
     public static void main(String[] args) throws Exception {
-        Corn corn = new Corn(args[0]);
-        corn.generate();
+        Corn corn = new Corn();
+        corn.generate(args[0]);
     }
 
 }

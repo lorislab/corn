@@ -15,11 +15,16 @@
  */
 package org.lorislab.corn.beans;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.lorislab.corn.Corn;
+import org.lorislab.corn.CornConfig;
 import org.lorislab.corn.csv.CSVObject;
 import org.lorislab.corn.xml.XSDDefinition;
 import org.lorislab.corn.xml.XmlObject;
@@ -32,6 +37,12 @@ public class GeneratorBean {
 
     private static final Map<Integer, XSDDefinition> XSD_DEFINITIONS = new HashMap<>();
 
+    private final Path target;
+    
+    public GeneratorBean(CornConfig config) {
+        this.target = Paths.get(config.target);
+    }
+
     public CSVObject csv(Object value) {
 
         Map<String, Object> data = (Map<String, Object>) ScriptObjectMirror.wrapAsJSONCompatible(value, null);
@@ -40,7 +51,8 @@ public class GeneratorBean {
         List<String> columns = (List<String>) tmp.get("columns");
         String separator = (String) tmp.get("separator");
         CSVObject result = new CSVObject(columns, separator);
-        result.generate(Corn.getTarget(), data);
+        
+        result.generate(target, data);
         return result;
     }
 
@@ -62,7 +74,7 @@ public class GeneratorBean {
         }
 
         XmlObject result = new XmlObject(xsdDef);
-        result.generate(Corn.getTarget(), data);
+        result.generate(target, data);
         return result;
     }
 }

@@ -35,9 +35,9 @@ public abstract class AbstractObject {
         createData(data);
 
         Path path = writeToFile(directory);
-        
-        validation(path);
         System.out.println("File: " + path);
+        validation(path);
+        
         return path;
     }
 
