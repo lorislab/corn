@@ -103,6 +103,14 @@ public class XmlPathItem implements Map {
         return getObject(document, xpath, key);
     }
 
+    public int length() {
+        return size();
+    }
+    
+    public int getLength() {
+        return size();
+    }
+    
     public int getSize() {
         return size();
     }

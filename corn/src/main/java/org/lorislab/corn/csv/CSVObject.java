@@ -27,36 +27,27 @@ import org.lorislab.corn.AbstractObject;
 
 public class CSVObject extends AbstractObject implements List {
 
-    private List<Map<String, Object>> data;
-
-    private final List<String> columns;
+    private final CSVObjectInput input;
     
-    private final String separator;
-    
-    public CSVObject(List<String> columns, String separator) {
-        this.columns = columns;
-        this.separator = separator;
+    public CSVObject(CSVObjectInput input) {
+        this.input = input;
     }
-
+    
     public List<Map<String, Object>> getData() {
-        return data;
-    }
-
-    public void setData(List<Map<String, Object>> data) {
-        this.data = data;
+        return input.data;
     }
 
     @Override
     protected Path writeToFile(Path directory) {
-        Path path = directory.resolve(fileName);
+        Path path = directory.resolve(input.file);
         try (BufferedWriter writer = Files.newBufferedWriter(path)) {
-            for (Map<String, Object> row : data) {
-                for (String col : columns) {
+            for (Map<String, Object> row : input.data) {
+                for (String col : input.definition.columns) {
                     Object item = row.get(col);
                     if (item != null) {
                         writer.write(item.toString());
                     }
-                    writer.write(separator);
+                    writer.write(input.definition.separator);
                 }
                 writer.write('\n');
             }
@@ -67,51 +58,46 @@ public class CSVObject extends AbstractObject implements List {
         return path;
     }
 
-    @Override
-    protected void addCustomAttribute() {        
-        System.out.println("   \"data\": \"list_of_objects is mandatory\",");
+    public int length() {
+        return size();
     }
-
-    @Override
-    protected void createData(Map<String, Object> tmp) {
-        data = (List<Map<String, Object>>) tmp.get("data");
-        if (data == null || data.isEmpty()) {
-            missingAttribute("data");
-        }
+    
+    public int getLength() {
+        return size();
     }
-
+    
     public int getSize() {
         return size();
     }
 
     @Override
     public int size() {
-        return data.size();
+        return input.data.size();
     }
 
     @Override
     public boolean isEmpty() {
-        return data.isEmpty();
+        return input.data.isEmpty();
     }
 
     @Override
     public boolean contains(Object o) {
-        return data.contains(o);
+        return input.data.contains(o);
     }
 
     @Override
     public Iterator iterator() {
-        return data.iterator();
+        return input.data.iterator();
     }
 
     @Override
     public Object[] toArray() {
-        return data.toArray();
+        return input.data.toArray();
     }
 
     @Override
     public Object[] toArray(Object[] a) {
-        return data.toArray(a);
+        return input.data.toArray(a);
     }
 
     @Override
@@ -126,7 +112,7 @@ public class CSVObject extends AbstractObject implements List {
 
     @Override
     public boolean containsAll(Collection c) {
-        return data.containsAll(c);
+        return input.data.containsAll(c);
     }
 
     @Override
@@ -156,7 +142,7 @@ public class CSVObject extends AbstractObject implements List {
 
     @Override
     public Object get(int index) {
-        return data.get(index);
+        return input.data.get(index);
     }
 
     @Override
@@ -176,27 +162,27 @@ public class CSVObject extends AbstractObject implements List {
 
     @Override
     public int indexOf(Object o) {
-        return data.indexOf(o);
+        return input.data.indexOf(o);
     }
 
     @Override
     public int lastIndexOf(Object o) {
-        return data.lastIndexOf(o);
+        return input.data.lastIndexOf(o);
     }
 
     @Override
     public ListIterator listIterator() {
-        return data.listIterator();
+        return input.data.listIterator();
     }
 
     @Override
     public ListIterator listIterator(int index) {
-        return data.listIterator(index);
+        return input.data.listIterator(index);
     }
 
     @Override
     public List subList(int fromIndex, int toIndex) {
-        return data.subList(fromIndex, toIndex);
+        return input.data.subList(fromIndex, toIndex);
     }
 
 }

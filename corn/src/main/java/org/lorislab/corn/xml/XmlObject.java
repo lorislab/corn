@@ -20,6 +20,8 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.xml.soap.MessageFactory;
@@ -31,36 +33,42 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.lorislab.corn.AbstractObject;
+import org.lorislab.corn.xml.XmlObjectInput.XmlConfig;
 import org.w3c.dom.Document;
 
 public class XmlObject extends AbstractObject implements Map {
 
+    private static final Map<Integer, XSDDefinition> XSD_DEFINITIONS = new HashMap<>();
+
     private Document document;
-
-    private Map<String, Object> data;
-
-    private String root;
-
-    private String namespace;
 
     private String xpath;
 
     private XSDDefinition xsdDefinition;
 
-    public XmlObject(XSDDefinition definition) {
-        this.xsdDefinition = definition;
-    }
+    private GeneratorConfig config;
 
-    public String getNamespace() {
-        return namespace;
-    }
+    private final XmlObjectInput input;
 
-    public String getRoot() {
-        return root;
+    public XmlObject(XmlObjectInput input) {
+        this.input = input;
+        config = createGeneratorConfig(input.config);
+
+        int code = 10;
+        for (String s : input.definition.xsds) {
+            code = code * 31 + s.hashCode();
+        }
+
+        xsdDefinition = XSD_DEFINITIONS.get(code);
+        if (xsdDefinition == null) {
+            xsdDefinition = new XSDDefinition(input.definition.xsds);
+            XSD_DEFINITIONS.put(code, xsdDefinition);
+        }
+
     }
 
     public Map<String, Object> getData() {
-        return data;
+        return input.data;
     }
 
     public Document getDocument() {
@@ -68,105 +76,67 @@ public class XmlObject extends AbstractObject implements Map {
     }
 
     @Override
-    protected void addCustomAttribute() {  
-        System.out.println("   \"root\": \"xml_root_name is mandatory\",");
-        System.out.println("   \"namespace\": \"xml_root_namespace is optional\",");
-        System.out.println("   \"data\": \"xml_structure is mandatory\",");
-    }
-
-    @Override
-    protected void createData(Map<String, Object> data) {
-
-        root = (String) data.get("root");
-        if (root == null || root.isEmpty()) {
-            missingAttribute("root");
-        }
-        
-        if (fileName == null || fileName.isEmpty()) {
-            missingAttribute("file");
-        }
-        data = (Map<String, Object>) data.get("data");
-        if (data == null || data.isEmpty()) {
-            missingAttribute("data");
-        }
-        
-        namespace = (String) data.get("namespace");
-        xpath = XmlPathItem.createXPath("", root);
-
-        Map<String, Object> c = (Map<String, Object>) data.get("config");
-        GeneratorConfig config = createGeneratorConfig(c);
+    protected void createData() {
+        xpath = XmlPathItem.createXPath("", input.root);
         Generator generator = new Generator(config, xsdDefinition);
-        document = generator.generate(namespace, root, data);
+        document = generator.generate(input.namespace, input.root, input.data);
     }
 
     @Override
     protected void validation(Path path) {
         XmlValidator.validate(path, xsdDefinition);
     }
-    
-    private static GeneratorConfig createGeneratorConfig(Map<String, Object> data) {
+
+    private static GeneratorConfig createGeneratorConfig(XmlConfig data) {
         GeneratorConfig config = new GeneratorConfig();
-        if (data == null || data.isEmpty()) {
+        if (data == null) {
             return config;
         }
-        Object tmp = data.get("xml-max-recursion-depth");
-        if (tmp instanceof BigDecimal) {
-            config.maximumRecursionDepth = ((BigDecimal) tmp).intValue();
+        if (data.maximumRecursionDepth != null) {
+            config.maximumRecursionDepth = data.maximumRecursionDepth;
         }
-        tmp = data.get("xml-max-elements");
-        if (tmp instanceof BigDecimal) {
-            config.maximumElementsGenerated = ((BigDecimal) tmp).intValue();
+        if (data.maximumElementsGenerated != null) {
+            config.maximumElementsGenerated = data.maximumElementsGenerated;
         }
-        tmp = data.get("xml-min-elements");
-        if (tmp instanceof BigDecimal) {
-            config.minimumElementsGenerated = ((BigDecimal) tmp).intValue();
+        if (data.minimumElementsGenerated != null) {
+            config.minimumElementsGenerated = data.minimumElementsGenerated;
         }
-        tmp = data.get("xml-max-list-items");
-        if (tmp instanceof BigDecimal) {
-            config.maximumListItemsGenerated = ((BigDecimal) tmp).intValue();
+        if (data.maximumListItemsGenerated != null) {
+            config.maximumListItemsGenerated = data.maximumListItemsGenerated;
         }
-        tmp = data.get("xml-min-list-items");
-        if (tmp instanceof BigDecimal) {
-            config.minimumListItemsGenerated = ((BigDecimal) tmp).intValue();
+        if (data.minimumListItemsGenerated != null) {
+            config.minimumListItemsGenerated = data.minimumListItemsGenerated;
         }
-        tmp = data.get("xml-date-format");
-        if (tmp instanceof String) {
-            config.dateFormat = (String) tmp;
+        if (data.dateFormat != null) {
+            config.dateFormat = data.dateFormat;
         }
-        tmp = data.get("xml-time-format");
-        if (tmp instanceof String) {
-            config.timeFormat = (String) tmp;
+        if (data.timeFormat != null) {
+            config.timeFormat = data.timeFormat;
         }
-        tmp = data.get("xml-all-choices");
-        if (tmp instanceof Boolean) {
-            config.generateAllChoices = (Boolean) tmp;
+        if (data.generateAllChoices != null) {
+            config.generateAllChoices = data.generateAllChoices;
         }
-        tmp = data.get("xml-optional-attributes");
-        if (tmp instanceof Boolean) {
-            config.generateOptionalAttributes = (Boolean) tmp;
+        if (data.generateOptionalAttributes != null) {
+            config.generateOptionalAttributes = data.generateOptionalAttributes;
         }
-        tmp = data.get("xml-fixed-attributes");
-        if (tmp instanceof Boolean) {
-            config.generateFixedAttributes = (Boolean) tmp;
+        if (data.generateFixedAttributes != null) {
+            config.generateFixedAttributes = data.generateFixedAttributes;
         }
-        tmp = data.get("xml-default-attributes");
-        if (tmp instanceof Boolean) {
-            config.generateDefaultAttributes = (Boolean) tmp;
+        if (data.generateDefaultAttributes != null) {
+            config.generateDefaultAttributes = data.generateDefaultAttributes;
         }
-        tmp = data.get("xml-optional-elements");
-        if (tmp instanceof Boolean) {
-            config.generateOptionalElements = (Boolean) tmp;
+        if (data.generateOptionalElements != null) {
+            config.generateOptionalElements = data.generateOptionalElements;
         }
-        tmp = data.get("xml-default-elements-value");
-        if (tmp instanceof Boolean) {
-            config.generateDefaultElementValues = (Boolean) tmp;
+        if (data.generateDefaultElementValues != null) {
+            config.generateDefaultElementValues = data.generateDefaultElementValues;
         }
         return config;
     }
 
     @Override
     protected Path writeToFile(Path parent) {
-        Path path = parent.resolve(fileName);
+        Path path = parent.resolve(input.file);
         try {
             Source sc;
             if (xsdDefinition.isWsdl()) {
@@ -201,6 +171,18 @@ public class XmlObject extends AbstractObject implements Map {
     @Override
     public Object get(Object key) {
         return XmlPathItem.getObject(document, xpath, key);
+    }
+
+    public int length() {
+        return size();
+    }
+
+    public int getLength() {
+        return size();
+    }
+
+    public int getSize() {
+        return size();
     }
 
     @Override

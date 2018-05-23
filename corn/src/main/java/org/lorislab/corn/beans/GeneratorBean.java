@@ -15,19 +15,17 @@
  */
 package org.lorislab.corn.beans;
 
-import java.io.IOException;
-import java.nio.file.Files;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
-import org.lorislab.corn.Corn;
 import org.lorislab.corn.CornConfig;
 import org.lorislab.corn.csv.CSVObject;
-import org.lorislab.corn.xml.XSDDefinition;
+import org.lorislab.corn.csv.CSVObjectInput;
 import org.lorislab.corn.xml.XmlObject;
+import org.lorislab.corn.xml.XmlObjectInput;
 
 /**
  *
@@ -35,46 +33,35 @@ import org.lorislab.corn.xml.XmlObject;
  */
 public class GeneratorBean {
 
-    private static final Map<Integer, XSDDefinition> XSD_DEFINITIONS = new HashMap<>();
-
     private final Path target;
+
+    private final Gson gson = new Gson();
     
     public GeneratorBean(CornConfig config) {
         this.target = Paths.get(config.target);
     }
 
     public CSVObject csv(Object value) {
-
         Map<String, Object> data = (Map<String, Object>) ScriptObjectMirror.wrapAsJSONCompatible(value, null);
-
-        Map<String, Object> tmp = (Map<String, Object>) data.get("definition");
-        List<String> columns = (List<String>) tmp.get("columns");
-        String separator = (String) tmp.get("separator");
-        CSVObject result = new CSVObject(columns, separator);
-        
-        result.generate(target, data);
-        return result;
+        JsonElement e = gson.toJsonTree(data);
+        CSVObjectInput input = gson.fromJson(e, CSVObjectInput.class);        
+        if (input != null) {
+            CSVObject result = new CSVObject(input);
+            result.generate(target);
+            return result;
+        }
+        return null;
     }
 
     public XmlObject xml(Object value) {
-
         Map<String, Object> data = (Map<String, Object>) ScriptObjectMirror.wrapAsJSONCompatible(value, null);
-
-        Map<String, Object> tmp = (Map<String, Object>) data.get("definition");
-        List<String> xsds = (List<String>) tmp.get("xsds");
-
-        int code = 10;
-        for (String s : xsds) {
-            code = code * 31 + s.hashCode();
+        JsonElement e = gson.toJsonTree(data);
+        XmlObjectInput input = gson.fromJson(e, XmlObjectInput.class);        
+        if (input != null) {
+            XmlObject result = new XmlObject(input);
+            result.generate(target);
+            return result;
         }
-        XSDDefinition xsdDef = XSD_DEFINITIONS.get(code);
-        if (xsdDef == null) {
-            xsdDef = new XSDDefinition(xsds);
-            XSD_DEFINITIONS.put(code, xsdDef);
-        }
-
-        XmlObject result = new XmlObject(xsdDef);
-        result.generate(target, data);
-        return result;
+        return null;
     }
 }
