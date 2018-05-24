@@ -280,8 +280,8 @@ public class Generator {
                                                 List valueList = (List) val;
                                                 // TODO: valueList find item with value _size and _index
                                                 
-                                                for (int i = 0; i < valueList.size(); i++) {
-                                                    Object t = valueList.get(i);
+                                                for (int i = valueList.size(); 0<i; i--) {
+                                                    Object t = valueList.get(i-1);
                                                     Object value = null;
                                                     Map<String, Object> definition = null;
                                                     if (t instanceof Map) {
