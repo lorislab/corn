@@ -16,6 +16,7 @@
 package org.lorislab.corn.beans;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,6 +25,7 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.lorislab.corn.CornConfig;
 import org.lorislab.corn.csv.CSVObject;
 import org.lorislab.corn.csv.CSVObjectInput;
+import org.lorislab.corn.gson.RequiredKeyAdapterFactory;
 import org.lorislab.corn.xml.XmlObject;
 import org.lorislab.corn.xml.XmlObjectInput;
 
@@ -35,7 +37,9 @@ public class GeneratorBean {
 
     private final Path target;
 
-    private final static Gson GSON = new Gson();
+    private final static Gson GSON = new GsonBuilder()
+            .registerTypeAdapterFactory(new RequiredKeyAdapterFactory())
+            .create();
 
     public GeneratorBean(CornConfig config) {
         this.target = Paths.get(config.target);

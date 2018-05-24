@@ -18,6 +18,7 @@ package org.lorislab.corn.xml;
 import com.google.gson.annotations.SerializedName;
 import java.util.List;
 import java.util.Map;
+import org.lorislab.corn.gson.Required;
 
 /**
  *
@@ -27,20 +28,24 @@ public class XmlObjectInput {
 
     public Map<String, Object> data;
     
+    @Required
     public String file;
 
+    @Required
     public String root;
 
     public String namespace;
 
     public XmlConfig config;
 
+    @Required
     public XmlDefinition definition;
     
     public static class XmlDefinition {
         
         public String version;
         
+        @Required
         public List<String> xsds;
     }
     
