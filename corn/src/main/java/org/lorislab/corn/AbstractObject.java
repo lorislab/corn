@@ -33,15 +33,6 @@ public abstract class AbstractObject {
 
     protected abstract Path writeToFile(Path directory);
 
-//    private void missingAttribute(String attribute) {
-//        System.out.println("Missing '" + attribute + "' attribute in the script object!");
-//        System.out.println("The script object for the " + this.getClass().getSimpleName() + " muss have this format: ");
-//        System.out.println("{");
-//        System.out.println("   \"file\": \"output_file_name is mandatory\",");
-//        System.out.println("   \"definition\": \"output file definition is mandatory\",");
-//        System.out.println("}");
-//        throw new RuntimeException("Wrong script object!");
-//    }
     
     protected void validation(Path path) {
         // empty

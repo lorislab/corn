@@ -17,6 +17,7 @@ package org.lorislab.corn;
 
 import com.google.gson.Gson;
 import java.io.FileReader;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -60,7 +61,12 @@ public class Corn {
         try {
             engine.eval("load('" + config.run + "')");
         } catch (ScriptException ex) {
-            throw new RuntimeException("Error executing the script for the step " + config.run, ex);
+            System.err.println("ERROR ------------------------------------------------------------------");
+            System.err.println("Script file: "  + ex.getFileName());
+            System.err.println("Column : "  + ex.getColumnNumber());
+            System.err.println("Line : "  + ex.getLineNumber());
+            System.err.println("Message : "  + ex.getMessage());
+            System.err.println("------------------------------------------------------------------------");
         }
     }
 

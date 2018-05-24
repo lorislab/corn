@@ -35,16 +35,16 @@ public class GeneratorBean {
 
     private final Path target;
 
-    private final Gson gson = new Gson();
-    
+    private final static Gson GSON = new Gson();
+
     public GeneratorBean(CornConfig config) {
         this.target = Paths.get(config.target);
     }
 
     public CSVObject csv(Object value) {
         Map<String, Object> data = (Map<String, Object>) ScriptObjectMirror.wrapAsJSONCompatible(value, null);
-        JsonElement e = gson.toJsonTree(data);
-        CSVObjectInput input = gson.fromJson(e, CSVObjectInput.class);        
+        JsonElement e = GSON.toJsonTree(data);
+        CSVObjectInput input = GSON.fromJson(e, CSVObjectInput.class);
         if (input != null) {
             CSVObject result = new CSVObject(input);
             result.generate(target);
@@ -55,8 +55,8 @@ public class GeneratorBean {
 
     public XmlObject xml(Object value) {
         Map<String, Object> data = (Map<String, Object>) ScriptObjectMirror.wrapAsJSONCompatible(value, null);
-        JsonElement e = gson.toJsonTree(data);
-        XmlObjectInput input = gson.fromJson(e, XmlObjectInput.class);        
+        JsonElement e = GSON.toJsonTree(data);
+        XmlObjectInput input = GSON.fromJson(e, XmlObjectInput.class);
         if (input != null) {
             XmlObject result = new XmlObject(input);
             result.generate(target);
