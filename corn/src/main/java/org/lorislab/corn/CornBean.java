@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.lorislab.corn.beans;
+package org.lorislab.corn;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -25,9 +25,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-import jdk.nashorn.api.scripting.NashornScriptEngine;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
-import org.lorislab.corn.CornConfig;
 import org.lorislab.corn.csv.CSVObject;
 import org.lorislab.corn.csv.CSVObjectInput;
 import org.lorislab.corn.gson.RequiredKeyAdapterFactory;
@@ -39,17 +37,22 @@ import org.lorislab.corn.xml.XmlObjectInput;
  * 
  * @author andrej
  */
-public class GeneratorBean {
+public class CornBean {
 
+    public static final String NAME = "corn";
+    
     private final Path target;
 
     private final static Gson GSON = new GsonBuilder()
             .registerTypeAdapterFactory(new RequiredKeyAdapterFactory())
             .create();
 
-    public GeneratorBean(NashornScriptEngine engine) {
-        CornConfig config = (CornConfig) engine.get(CornConfig.NAME);
-        this.target = Paths.get(config.target);
+    public CornBean(String target) {
+        this(Paths.get(target));
+    }
+    
+    public CornBean(Path target) {
+        this.target = target;
     }
 
     public CSVObject csv(Object value) {
@@ -76,41 +79,37 @@ public class GeneratorBean {
         return null;
     }
     
-    public String currentDateFormat(String format) {
+    public String date(String format) {
         SimpleDateFormat sf = new SimpleDateFormat(format);
         return sf.format(new Date());
     }
     
-    public String dateFormat(Date date, String format) {
+    public String date(Date date, String format) {
         SimpleDateFormat sf = new SimpleDateFormat(format);
         return sf.format(date);
     }
     
-    public String currentDateFormat(String format, String language, String country) {
+    public String date(String format, String language, String country) {
         SimpleDateFormat sf = new SimpleDateFormat(format, new Locale(language, country));
         return sf.format(new Date());
     }
     
-    public String dateFormat(Date date, String format, String language, String country) {
+    public String date(Date date, String format, String language, String country) {
         SimpleDateFormat sf = new SimpleDateFormat(format, new Locale(language, country));
         return sf.format(date);
     }
     
-    public Date currentDate() {
+    public Date date() {
         return new Date();
     }
 
-    public String uuidRandom() {
+    public String uuid() {
         return UUID.randomUUID().toString();
     }
     
-    public String uuidRandom(int length) {
-        String result = uuidRandom().substring(0, length);
+    public String uuid(int length) {
+        String result = uuid().substring(0, length);
         return result;
     }
-    
-    public String uuidToString(int length) {
-        String result = uuidRandom().substring(0, length);
-        return result;
-    }    
+  
 }
