@@ -17,7 +17,6 @@ package org.lorislab.corn;
 
 import com.google.gson.Gson;
 import java.io.FileReader;
-import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -46,6 +45,7 @@ public class Corn {
         ScriptEngine engine = mgr.getEngineByName("nashorn");
 
         engine.put(CornBean.NAME, new CornBean(target));
+        engine.put(CornConfig.NAME, config);
         engine.put("parameters", config.parameters);
         System.out.println("Parameters {");
         if (config.parameters != null && !config.parameters.isEmpty()) {

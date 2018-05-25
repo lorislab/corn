@@ -1,9 +1,9 @@
-/* global org, engine, java */
+/* global org, engine, java, corn_config */
 
 (function(){
     "use strict";
     var result = {
-        generator : new org.lorislab.corn.beans.GeneratorBean(engine)
+        generator : new org.lorislab.corn.beans.GeneratorBean(corn_config.target)
     };
     result.csv = function(data) {
         return this.generator.csv(data);
@@ -11,19 +11,19 @@
     result.xml = function(data) {
         return this.generator.xml(data);
     };    
-    result.currentDateFormat = function(format) {
+    result.date = function(format) {
         return this.generator.currentDateFormat(format);
     };
-    result.currentDate = function() {
+    result.date = function() {
         return this.generator.currentDate();
     };    
-    result.dateFormat = function(date, format) {
+    result.date = function(date, format) {
         return this.generator.dateFormat(date, format);
     };    
-    result.uuidRandom = function() {
+    result.uuid = function() {
         return this.generator.uuidRandom();
     };
-    result.uuidRandom = function(length) {
+    result.uuid = function(length) {
         return this.generator.uuidRandom(length);
     };
     return result;
