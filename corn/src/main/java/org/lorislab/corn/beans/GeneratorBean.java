@@ -35,7 +35,8 @@ import org.lorislab.corn.xml.XmlObject;
 import org.lorislab.corn.xml.XmlObjectInput;
 
 /**
- *
+ * The generator bean.
+ * 
  * @author andrej
  */
 public class GeneratorBean {
