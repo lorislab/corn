@@ -13,13 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.lorislab.corn.model;
+package org.lorislab.corn.csv;
 
+import java.util.List;
 import java.util.Map;
+import org.lorislab.corn.gson.Required;
 
-public class DataGenerator {
-
-    public Map<String, Object> variable;
+/**
+ *
+ * @author andrej
+ */
+public class CSVObjectInput {
     
-    public DataGeneratorData data;
+    @Required
+    public String file;
+    
+    @Required
+    public CSVDefinition definition;
+    
+    public List<Map<String, Object>> data;
+    
+    public static class CSVDefinition {
+        
+        public String version;
+        
+        @Required
+        public List<String> columns;
+        
+        @Required
+        public String separator;
+    }
 }

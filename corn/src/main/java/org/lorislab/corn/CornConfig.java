@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.lorislab.corn.model;
+package org.lorislab.corn;
 
 import java.util.Map;
 
@@ -23,16 +23,13 @@ import java.util.Map;
  * @author andrej
  */
 public class CornConfig {
-   
-    /**
-     * The definition file
-     */
-    public String definition;
+       
+    public static final String NAME = "corn_config";
     
     /**
-     * The generator file
+     * The generator main
      */
-    public String generator;
+    public String run;
     
     /**
      * The target output directory
@@ -43,10 +40,5 @@ public class CornConfig {
      * The input parameters.
      */
     public Map<String, Object> parameters;
-    
-    /**
-     * The external beans
-     */
-    public Map<String, String> beans;
 
 }

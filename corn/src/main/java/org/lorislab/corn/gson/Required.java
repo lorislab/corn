@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.lorislab.corn.model;
+package org.lorislab.corn.gson;
 
-import java.util.Map;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
+/**
+ *
+ * @author andrej
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface Required { 
 
-public class DataGeneratorItem {
- 
-    public String name;
-    
-    public String definition;
-    
-    public String js;
-            
-    public Map<String, Object> config;
-    
-    public DataGeneratorData data;
 }

@@ -26,7 +26,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;
-import org.lorislab.corn.log.Logger;
 import org.w3c.dom.Document;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
@@ -65,15 +64,15 @@ public class XmlValidator {
         }
 
         private void log(SAXParseException ex, String type) {
-            Logger.error();
-            Logger.error("**********************************************************");
-            Logger.error("TYPE: " + type);
-            Logger.error("FILE: " + path);
-            Logger.error("MSG: " + ex.getMessage());
-            Logger.error("LINE: " + ex.getLineNumber());
-            Logger.error("COLUMN: " + ex.getColumnNumber());
-            Logger.error("**********************************************************");
-            Logger.error();
+            System.err.println();
+            System.err.println("**********************************************************");
+            System.err.println("TYPE: " + type);
+            System.err.println("FILE: " + path);
+            System.err.println("MSG: " + ex.getMessage());
+            System.err.println("LINE: " + ex.getLineNumber());
+            System.err.println("COLUMN: " + ex.getColumnNumber());
+            System.err.println("**********************************************************");
+            System.err.println();
         }
 
         @Override

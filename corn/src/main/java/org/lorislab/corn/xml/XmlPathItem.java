@@ -21,7 +21,6 @@ import java.util.Set;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
-import static org.lorislab.corn.log.Logger.debug;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -50,12 +49,10 @@ public class XmlPathItem implements Map {
                 Node node = nodeList.item(0);
                 if (node.hasChildNodes()) {
                     if (node.getChildNodes().item(0) instanceof Text) {
-                        debug("TEXT: " + node.getTextContent());
                         return node.getTextContent();
                     }
                     return new XmlPathItem(xpath, document);
                 } else {
-                    debug("RESULT: " + node.getTextContent());
                     return node.getTextContent();
                 }
             }
@@ -106,6 +103,14 @@ public class XmlPathItem implements Map {
         return getObject(document, xpath, key);
     }
 
+    public int length() {
+        return size();
+    }
+    
+    public int getLength() {
+        return size();
+    }
+    
     public int getSize() {
         return size();
     }

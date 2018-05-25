@@ -13,31 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.lorislab.corn.log;
+package org.lorislab.corn;
 
-public class Logger {
-    
-    public static boolean DEBUG = false;
-    
-    public static void info(Object message) {
-        System.out.println(message);
+import java.nio.file.Path;
+
+/**
+ *
+ * @author andrej
+ */
+public abstract class AbstractObject {
+
+    public Path generate(Path output) {
+        createData();
+        Path path = writeToFile(output);
+        System.out.println("File: " + path);
+        validation(path);       
+        return path;
     }
 
-    public static void info() {
-        System.out.println();
+    protected abstract Path writeToFile(Path directory);
+
+    
+    protected void validation(Path path) {
+        // empty
     }
-    
-    public static void debug(Object message) {
-        if (DEBUG) {
-            System.out.println(message);
-        }
+
+    protected void createData() {
+        
     }
-    
-    public static void error(Object message) {
-        System.err.println(message);
-    }    
-    
-    public static void error() {
-        System.err.println();
-    }    
+
 }
