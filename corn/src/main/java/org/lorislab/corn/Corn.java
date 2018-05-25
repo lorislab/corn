@@ -45,7 +45,7 @@ public class Corn {
         ScriptEngineManager mgr = new ScriptEngineManager();
         ScriptEngine engine = mgr.getEngineByName("nashorn");
 
-        engine.put("corn", config);
+        engine.put(CornConfig.NAME, config);
         engine.put("parameters", config.parameters);
         System.out.println("Parameters {");
         if (config.parameters != null && !config.parameters.isEmpty()) {

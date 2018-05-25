@@ -24,6 +24,8 @@ import java.util.Map;
  */
 public class CornConfig {
        
+    public static final String NAME = "corn";
+    
     /**
      * The generator main
      */

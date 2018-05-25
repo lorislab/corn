@@ -20,7 +20,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
+import jdk.nashorn.api.scripting.NashornScriptEngine;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.lorislab.corn.CornConfig;
 import org.lorislab.corn.csv.CSVObject;
@@ -41,7 +46,8 @@ public class GeneratorBean {
             .registerTypeAdapterFactory(new RequiredKeyAdapterFactory())
             .create();
 
-    public GeneratorBean(CornConfig config) {
+    public GeneratorBean(NashornScriptEngine engine) {
+        CornConfig config = (CornConfig) engine.get(CornConfig.NAME);
         this.target = Paths.get(config.target);
     }
 
@@ -68,4 +74,42 @@ public class GeneratorBean {
         }
         return null;
     }
+    
+    public String currentDateFormat(String format) {
+        SimpleDateFormat sf = new SimpleDateFormat(format);
+        return sf.format(new Date());
+    }
+    
+    public String dateFormat(Date date, String format) {
+        SimpleDateFormat sf = new SimpleDateFormat(format);
+        return sf.format(date);
+    }
+    
+    public String currentDateFormat(String format, String language, String country) {
+        SimpleDateFormat sf = new SimpleDateFormat(format, new Locale(language, country));
+        return sf.format(new Date());
+    }
+    
+    public String dateFormat(Date date, String format, String language, String country) {
+        SimpleDateFormat sf = new SimpleDateFormat(format, new Locale(language, country));
+        return sf.format(date);
+    }
+    
+    public Date currentDate() {
+        return new Date();
+    }
+
+    public String uuidRandom() {
+        return UUID.randomUUID().toString();
+    }
+    
+    public String uuidRandom(int length) {
+        String result = uuidRandom().substring(0, length);
+        return result;
+    }
+    
+    public String uuidToString(int length) {
+        String result = uuidRandom().substring(0, length);
+        return result;
+    }    
 }
