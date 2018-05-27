@@ -43,7 +43,7 @@ public class Main {
             engine.put("arguments", args);
             engine.eval("load('" + run + "')");
         } catch (ScriptException ex) {
-            System.err.println("ERROR ------------------------------------------------------------------");
+            System.err.println("------------------------------------------------------------------------");
             System.err.println("Script file: "  + ex.getFileName());
             System.err.println("Column : "  + ex.getColumnNumber());
             System.err.println("Line : "  + ex.getLineNumber());
