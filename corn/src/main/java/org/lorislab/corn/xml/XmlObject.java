@@ -16,12 +16,10 @@
 package org.lorislab.corn.xml;
 
 import java.io.BufferedWriter;
-import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.xml.soap.MessageFactory;
@@ -32,11 +30,10 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import org.lorislab.corn.AbstractObject;
 import org.lorislab.corn.xml.XmlObjectInput.XmlConfig;
 import org.w3c.dom.Document;
 
-public class XmlObject extends AbstractObject implements Map {
+public class XmlObject implements Map {
 
     private static final Map<Integer, XSDDefinition> XSD_DEFINITIONS = new HashMap<>();
 
@@ -75,16 +72,13 @@ public class XmlObject extends AbstractObject implements Map {
         return document;
     }
 
-    @Override
-    protected void createData() {
+    public Path generate(Path outpout) {
         xpath = XmlPathItem.createXPath("", input.root);
         Generator generator = new Generator(config, xsdDefinition);
-        document = generator.generate(input.namespace, input.root, input.data);
-    }
-
-    @Override
-    protected void validation(Path path) {
+        document = generator.generate(input.namespace, input.root, input.data);        
+        Path path = writeToFile(outpout);
         XmlValidator.validate(path, xsdDefinition);
+        return path;
     }
 
     private static GeneratorConfig createGeneratorConfig(XmlConfig data) {
@@ -134,8 +128,7 @@ public class XmlObject extends AbstractObject implements Map {
         return config;
     }
 
-    @Override
-    protected Path writeToFile(Path parent) {
+    private Path writeToFile(Path parent) {
         Path path = parent.resolve(input.file);
         try {
             Source sc;

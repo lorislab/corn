@@ -342,15 +342,12 @@ public class Generator {
                         for (int i = 0; i < tmp.getLength(); i++) {
                             stack.push(new StackItem(tmp.item(i), item));
                         }
-                    } else {
-//                        System.out.println("INGORE children: " + elem.getClass());
                     }
 
                 } else {
 
                     if (elem instanceof XSElementDeclaration) {
                         if (notMacRecursion) {
-//                            System.out.println("GENERATE: " + item.getDefinitionLevel() + "/" + item.getLevel() + " element " + item.getName() + " parent " + item.getParentElementName());
                             postProcessXSElementDeclaration((XSElementDeclaration) elem, item);
                         }
                     } else if (elem instanceof XSWildcard) {

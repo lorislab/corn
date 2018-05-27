@@ -68,8 +68,7 @@ public class XSDResource {
                     xsdUri = url.toURI().toString();
                     classpath = true;
                 } else {
-                    System.err.println("The XSD could not be found on the file system or classpath. XSD: " + path);
-                    throw new RuntimeException("The XSD could not be found. xsd: " + path);
+                    throw new RuntimeException("The XSD could not be found on the file system or classpath. XSD: " + path);
                 }
             }
         } catch (RuntimeException | URISyntaxException ex) {

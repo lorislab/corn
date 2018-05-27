@@ -64,15 +64,15 @@ public class XmlValidator {
         }
 
         private void log(SAXParseException ex, String type) {
-            System.err.println();
-            System.err.println("**********************************************************");
-            System.err.println("TYPE: " + type);
-            System.err.println("FILE: " + path);
-            System.err.println("MSG: " + ex.getMessage());
-            System.err.println("LINE: " + ex.getLineNumber());
-            System.err.println("COLUMN: " + ex.getColumnNumber());
-            System.err.println("**********************************************************");
-            System.err.println();
+            throw new RuntimeException(
+               "\n*********************************************"
+               + "\nTYPE:   " + type
+               + "\nFILE:   " + path
+               + "\nMESSAGE:" + ex.getMessage()
+               + "\nLINE:   " + ex.getLineNumber()
+               + "\nCOLUMN: " + ex.getColumnNumber()
+               + "\n*********************************************"
+            );
         }
 
         @Override

@@ -15,6 +15,10 @@
  */
 package org.lorislab.corn;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+
 /**
  * The main class.
  * 
@@ -22,15 +26,30 @@ package org.lorislab.corn;
  */
 public class Main {
     
-    public static void main(String[] args) throws Exception {
-        
-        String script = "corn.json";
+    public static void main(String[] args) {
+        String run = null;
         if (args != null && args.length > 0) {
-            script = args[0];
+            run = args[0];
         }
         
-        Corn corn = new Corn();
-        corn.generate(script);
+        if (run == null && run.isEmpty()) {
+            throw new RuntimeException("Missing script file to run!");
+        }
+        
+        ScriptEngineManager mgr = new ScriptEngineManager();
+        ScriptEngine engine = mgr.getEngineByName("nashorn");
+
+        try {
+            engine.put("arguments", args);
+            engine.eval("load('" + run + "')");
+        } catch (ScriptException ex) {
+            System.err.println("ERROR ------------------------------------------------------------------");
+            System.err.println("Script file: "  + ex.getFileName());
+            System.err.println("Column : "  + ex.getColumnNumber());
+            System.err.println("Line : "  + ex.getLineNumber());
+            System.err.println("Message : "  + ex.getMessage());
+            System.err.println("------------------------------------------------------------------------");
+        }
     }
 
 }

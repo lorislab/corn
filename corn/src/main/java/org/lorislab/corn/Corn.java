@@ -16,69 +16,160 @@
 package org.lorislab.corn;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.reflect.TypeToken;
 import java.io.FileReader;
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+import jdk.nashorn.api.scripting.NashornScriptEngine;
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import org.lorislab.corn.csv.CSVObject;
+import org.lorislab.corn.csv.CSVObjectInput;
+import org.lorislab.corn.gson.RequiredKeyAdapterFactory;
+import org.lorislab.corn.xml.XmlObject;
+import org.lorislab.corn.xml.XmlObjectInput;
 
 /**
+ * The generator bean.
  *
  * @author andrej
  */
 public class Corn {
 
-    public void generate(String config) throws Exception {
-        generate(loadConfig(config));        
+    private Path target = Paths.get("target");
+
+    private Map<String, Object> parameters = new HashMap<>();
+
+    private NashornScriptEngine engine;
+
+    private final static Gson GSON = new GsonBuilder()
+            .registerTypeAdapterFactory(new RequiredKeyAdapterFactory())
+            .create();
+    
+    public void setTarget(String target) {
+        if (target != null && !target.isEmpty()) {
+            this.target = Paths.get(target);
+        }
     }
     
-    public void generate(CornConfig config) throws Exception {
-
-        Path target = Paths.get(config.target);
-        if (!Files.exists(target)) {
-            Files.createDirectories(target);
-        }
-
-        ScriptEngineManager mgr = new ScriptEngineManager();
-        ScriptEngine engine = mgr.getEngineByName("nashorn");
-
-        engine.put(CornBean.NAME, new CornBean(target));
-        engine.put(CornConfig.NAME, config);
-        engine.put("parameters", config.parameters);
-        System.out.println("Parameters {");
-        if (config.parameters != null && !config.parameters.isEmpty()) {
-            config.parameters.entrySet().stream().map((k) -> {
-                engine.put(k.getKey(), k.getValue());
-                return k;
-            }).forEachOrdered((k) -> {
-                System.out.println(k.getKey() + " : " + k.getValue());
-            });
-        }
-        System.out.println("}");
-
-        try {
-            engine.eval("load('" + config.run + "')");
-        } catch (ScriptException ex) {
-            System.err.println("ERROR ------------------------------------------------------------------");
-            System.err.println("Script file: "  + ex.getFileName());
-            System.err.println("Column : "  + ex.getColumnNumber());
-            System.err.println("Line : "  + ex.getLineNumber());
-            System.err.println("Message : "  + ex.getMessage());
-            System.err.println("------------------------------------------------------------------------");
-        }
+    public void loadParameters(String name) {
+        parameters = loadJson(name);
+    }
+    
+    public void setParameters(Map<String, Object> parameters) {
+        this.parameters = parameters;
+    }
+    
+    public void setEngine(NashornScriptEngine engine) {
+        this.engine = engine;
     }
 
+    public Map<String, Object> getParameters() {
+        return parameters;
+    }
+
+    public CSVObject csv(Object value) {
+        createTaget();
+        Map<String, Object> data = (Map<String, Object>) ScriptObjectMirror.wrapAsJSONCompatible(value, null);
+        JsonElement e = GSON.toJsonTree(data);
+        CSVObjectInput input = GSON.fromJson(e, CSVObjectInput.class);
+        if (input != null) {
+            CSVObject result = new CSVObject(input);
+            Path path = result.generate(target);
+            println("File: " + path + "\n");
+            return result;
+        }
+        return null;
+    }
+
+    public XmlObject xml(Object value) {
+        createTaget();
+        Map<String, Object> data = (Map<String, Object>) ScriptObjectMirror.wrapAsJSONCompatible(value, null);
+        JsonElement e = GSON.toJsonTree(data);
+        XmlObjectInput input = GSON.fromJson(e, XmlObjectInput.class);
+        if (input != null) {
+            XmlObject result = new XmlObject(input);
+            Path path = result.generate(target);
+            println("File: " + path + "\n");
+            return result;
+        }
+        return null;
+    }
+
+    public String date(String format) {
+        SimpleDateFormat sf = new SimpleDateFormat(format);
+        return sf.format(new Date());
+    }
+
+    public String date(Date date, String format) {
+        SimpleDateFormat sf = new SimpleDateFormat(format);
+        return sf.format(date);
+    }
+
+    public String date(String format, String language, String country) {
+        SimpleDateFormat sf = new SimpleDateFormat(format, new Locale(language, country));
+        return sf.format(new Date());
+    }
+
+    public String date(Date date, String format, String language, String country) {
+        SimpleDateFormat sf = new SimpleDateFormat(format, new Locale(language, country));
+        return sf.format(date);
+    }
+
+    public Date date() {
+        return new Date();
+    }
+
+    public String uuid() {
+        return UUID.randomUUID().toString();
+    }
+
+    public String uuid(int length) {
+        String result = uuid().substring(0, length);
+        return result;
+    }
+
+    private void createTaget() {
+        try {
+            if (!Files.exists(this.target)) {
+                Files.createDirectories(this.target);
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException("Error creating the target directory: " + target);
+        }        
+    }
+    
+    private void println(String value) {
+        try {
+            if (engine != null) {
+                engine.getContext().getWriter().write(value);
+                engine.getContext().getWriter().flush();
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException("Error write the log message " + value);
+        }
+    }
+    
     /**
      * Loads the corn configuration file.
      *
      * @param file the file name.
      * @return the corresponding corn configuration.
      */
-    private static CornConfig loadConfig(String file) {
+    public Map<String, Object> loadJson(String file) {
         try (FileReader reader = new FileReader(file)) {
-            return new Gson().fromJson(reader, CornConfig.class);
+            Type type = new TypeToken<Map<String, Object>>() {
+            }.getType();
+            return new Gson().fromJson(reader, type);
         } catch (Exception ex) {
             throw new RuntimeException("Error loading the configuration file " + file, ex);
         }

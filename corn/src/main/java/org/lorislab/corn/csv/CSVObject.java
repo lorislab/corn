@@ -23,9 +23,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import org.lorislab.corn.AbstractObject;
 
-public class CSVObject extends AbstractObject implements List {
+public class CSVObject implements List {
 
     private final CSVObjectInput input;
     
@@ -37,8 +36,7 @@ public class CSVObject extends AbstractObject implements List {
         return input.data;
     }
 
-    @Override
-    protected Path writeToFile(Path directory) {
+    public Path generate(Path directory) {
         Path path = directory.resolve(input.file);
         try (BufferedWriter writer = Files.newBufferedWriter(path)) {
             for (Map<String, Object> row : input.data) {
