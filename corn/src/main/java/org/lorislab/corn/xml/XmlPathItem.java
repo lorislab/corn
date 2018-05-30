@@ -88,8 +88,9 @@ public class XmlPathItem implements Map {
     public static String createXPath(String path, Object key) {
         String result = path;
         if (key != null) {
-            if (key instanceof Integer) {
-                int index = (Integer) key;
+            if (key instanceof Number) {
+                Number n = (Number) key;
+                int index = n.intValue();
                 result = path + "[" + (index + 1) + "]";
             } else {
                 result = path + "/*[local-name()='" + key.toString() + "']";
