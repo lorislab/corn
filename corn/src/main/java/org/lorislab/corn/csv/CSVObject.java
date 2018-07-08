@@ -39,6 +39,14 @@ public class CSVObject implements List {
     public Path generate(Path directory) {
         Path path = directory.resolve(input.file);
         try (BufferedWriter writer = Files.newBufferedWriter(path)) {
+            if (input.definition.header) {
+                for (String col : input.definition.columns) {
+                    writer.write(col);
+                    writer.write(input.definition.separator);
+                }
+                writer.write('\n');
+            }
+            
             for (Map<String, Object> row : input.data) {
                 for (String col : input.definition.columns) {
                     Object item = row.get(col);

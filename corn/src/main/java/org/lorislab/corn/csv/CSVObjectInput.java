@@ -37,6 +37,8 @@ public class CSVObjectInput {
         
         public String version;
         
+        public boolean header;
+        
         @Required
         public List<String> columns;
         
