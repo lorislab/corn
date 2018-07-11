@@ -47,5 +47,5 @@ fi
 
 JAVA_OPTS="${JAVA_OPTS-}"
 
-java -cp "$CP" $JAVA_OPTS org.lorislab.corn.Main ${1+"$@"}
+java -cp "$CP" $JAVA_OPTS org.lorislab.corn.CornExecutor ${1+"$@"}
 

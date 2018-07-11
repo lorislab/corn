@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import javax.script.ScriptEngine;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.lorislab.corn.csv.CSVObject;
@@ -49,7 +50,7 @@ public class Corn {
 
     private Map<String, Object> parameters = new HashMap<>();
 
-    private NashornScriptEngine engine;
+    private ScriptEngine engine;
 
     private final static Gson GSON = new GsonBuilder()
             .registerTypeAdapterFactory(new RequiredKeyAdapterFactory())
@@ -69,7 +70,7 @@ public class Corn {
         this.parameters = parameters;
     }
     
-    public void setEngine(NashornScriptEngine engine) {
+    public void setEngine(ScriptEngine engine) {
         this.engine = engine;
     }
 

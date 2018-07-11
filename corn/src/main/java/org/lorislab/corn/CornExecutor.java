@@ -15,33 +15,41 @@
  */
 package org.lorislab.corn;
 
+import com.google.gson.Gson;
+import java.io.FileReader;
+import java.util.UUID;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 /**
- * The main class.
- * 
+ * The corn executor.
+ *
  * @author andrej
  */
-public class Main {
-    
-    public static void main(String[] args) {
-        String run = null;
+public class CornExecutor {
+
+    public static void main(String[] args) throws Exception {
+        String input = null;
+        String target = UUID.randomUUID().toString();
+        
         if (args != null && args.length > 0) {
-            run = args[0];
+            input = args[0];
         }
         
-        if (run == null && run.isEmpty()) {
+        if (input == null && input.isEmpty()) {
             throw new RuntimeException("Missing script file to run!");
         }
         
-        ScriptEngineManager mgr = new ScriptEngineManager();
-        ScriptEngine engine = mgr.getEngineByName("nashorn");
-
+        if (args != null && args.length > 1) {
+            target = args[1];
+        }
+        
+        Gson gson = new Gson();
+	CornRequest request = gson.fromJson(new FileReader(input), CornRequest.class);
+        
         try {
-            engine.put("arguments", args);
-            engine.eval("load('" + run + "')");
+            CornExecutor.execute(request, target);
         } catch (ScriptException ex) {
             System.err.println("------------------------------------------------------------------------");
             System.err.println("Script file: "  + ex.getFileName());
@@ -51,5 +59,24 @@ public class Main {
             System.err.println("------------------------------------------------------------------------");
         }
     }
+    
+    public static void execute(CornRequest request, String target) throws Exception, ScriptException {
 
+        ScriptEngineManager mgr = new ScriptEngineManager();
+        ScriptEngine engine = mgr.getEngineByName("nashorn");
+
+        Corn corn = new Corn();
+        corn.setEngine(engine);
+        corn.setTarget(target);
+
+        engine.put("corn", corn);
+        engine.put("arguments", request.getArguments());
+        if (request.getData() != null && !request.getData().isEmpty()) {
+            request.getData().entrySet().forEach((entry) -> {
+                engine.put(entry.getKey(), entry.getValue());
+            });
+        }
+        engine.eval("load('" + request.getRun() + "')");
+
+    }
 }
