@@ -37,7 +37,7 @@ public class CornExecutor {
             input = args[0];
         }
         
-        if (input == null && input.isEmpty()) {
+        if (input == null || input.isEmpty()) {
             throw new RuntimeException("Missing script file to run!");
         }
         
