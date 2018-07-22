@@ -36,22 +36,25 @@ public class XmlPathItem implements Map {
 
     private final Document document;
 
-    public XmlPathItem(String xpath, Document document) {
+    private final XPathFactory factory;
+    
+    public XmlPathItem(String xpath, Document document, XPathFactory factory) {
         this.xpath = xpath;
         this.document = document;
+        this.factory = factory;
     }
 
-    public static Object getObject(Document document, String path, Object key) {
+    public static Object getObject(Document document, String path, Object key, XPathFactory factory) {
         try {
             String xpath = createXPath(path, key);
-            NodeList nodeList = findNodeList(document, xpath);
+            NodeList nodeList = findNodeList(document, xpath, factory);
             if (nodeList != null && nodeList.getLength() > 0) {
                 Node node = nodeList.item(0);
                 if (node.hasChildNodes()) {
                     if (node.getChildNodes().item(0) instanceof Text) {
                         return node.getTextContent();
                     }
-                    return new XmlPathItem(xpath, document);
+                    return new XmlPathItem(xpath, document, factory);
                 } else {
                     return node.getTextContent();
                 }
@@ -62,23 +65,23 @@ public class XmlPathItem implements Map {
         }
     }
 
-    public static boolean containsObject(Document document, String path, Object key) {
+    public static boolean containsObject(Document document, String path, Object key, XPathFactory factory) {
         try {
-            NodeList nodeList = findNodeList(document, path, key);
+            NodeList nodeList = findNodeList(document, path, key, factory);
             return nodeList.getLength() != 0;
         } catch (Exception ex) {
             throw new RuntimeException("Error containsKey the xml " + key, ex);
         }
     }
 
-    public static NodeList findNodeList(Document document, String path, Object key) {
+    public static NodeList findNodeList(Document document, String path, Object key, XPathFactory factory) {
         String pathKey = createXPath(path, key);
-        return findNodeList(document, pathKey);
+        return findNodeList(document, pathKey, factory);
     }
 
-    public static NodeList findNodeList(Document document, String xpath) {
+    public static NodeList findNodeList(Document document, String xpath, XPathFactory factory) {
         try {
-            XPath xPath = XPathFactory.newInstance().newXPath();
+            XPath xPath = factory.newXPath();
             return (NodeList) xPath.evaluate(xpath, document, XPathConstants.NODESET);
         } catch (Exception ex) {
             throw new RuntimeException("Error containsKey the xml " + xpath, ex);
@@ -101,7 +104,7 @@ public class XmlPathItem implements Map {
 
     @Override
     public Object get(Object key) {
-        return getObject(document, xpath, key);
+        return getObject(document, xpath, key, factory);
     }
 
     public int length() {
@@ -132,7 +135,7 @@ public class XmlPathItem implements Map {
 
     @Override
     public boolean containsKey(Object key) {
-        return containsObject(document, xpath, key);
+        return containsObject(document, xpath, key, factory);
     }
 
     @Override

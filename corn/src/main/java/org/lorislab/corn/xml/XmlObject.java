@@ -30,6 +30,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPathFactory;
 import org.lorislab.corn.xml.XmlObjectInput.XmlConfig;
 import org.w3c.dom.Document;
 
@@ -37,6 +38,8 @@ public class XmlObject implements Map {
 
     private static final Map<Integer, XSDDefinition> XSD_DEFINITIONS = new HashMap<>();
 
+    private static Object lock = new Object();
+    
     private Document document;
 
     private String xpath;
@@ -47,8 +50,15 @@ public class XmlObject implements Map {
 
     private final XmlObjectInput input;
 
+    private final XPathFactory xPathFactory;
+    
     public XmlObject(XmlObjectInput input) {
         this.input = input;
+        
+        synchronized (lock) {
+            xPathFactory = XPathFactory.newInstance();
+        }
+
         config = createGeneratorConfig(input.config);
 
         int code = 10;
@@ -163,7 +173,7 @@ public class XmlObject implements Map {
 
     @Override
     public Object get(Object key) {
-        return XmlPathItem.getObject(document, xpath, key);
+        return XmlPathItem.getObject(document, xpath, key, xPathFactory);
     }
 
     public int length() {
@@ -193,7 +203,7 @@ public class XmlObject implements Map {
 
     @Override
     public boolean containsKey(Object key) {
-        return XmlPathItem.containsObject(document, xpath, key);
+        return XmlPathItem.containsObject(document, xpath, key, xPathFactory);
     }
 
     @Override
