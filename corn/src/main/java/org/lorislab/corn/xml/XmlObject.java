@@ -38,8 +38,6 @@ public class XmlObject implements Map {
 
     private static final Map<Integer, XSDDefinition> XSD_DEFINITIONS = new HashMap<>();
 
-    private static Object lock = new Object();
-    
     private Document document;
 
     private String xpath;
@@ -52,13 +50,10 @@ public class XmlObject implements Map {
 
     private final XPathFactory xPathFactory;
     
-    public XmlObject(XmlObjectInput input) {
+    public XmlObject(XmlObjectInput input, XPathFactory factory) {
         this.input = input;
+        this.xPathFactory = factory;
         
-        synchronized (lock) {
-            xPathFactory = XPathFactory.newInstance();
-        }
-
         config = createGeneratorConfig(input.config);
 
         int code = 10;

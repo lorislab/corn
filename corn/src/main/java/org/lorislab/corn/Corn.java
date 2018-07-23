@@ -31,7 +31,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import javax.script.ScriptEngine;
-import jdk.nashorn.api.scripting.NashornScriptEngine;
+import javax.xml.xpath.XPathFactory;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.lorislab.corn.csv.CSVObject;
 import org.lorislab.corn.csv.CSVObjectInput;
@@ -52,6 +52,18 @@ public class Corn {
 
     private ScriptEngine engine;
 
+    private static final Object LOCK = new Object();
+        
+    private final XPathFactory factory;
+
+    private boolean log = true;
+    
+    public Corn() {
+        synchronized (LOCK) {
+            factory = XPathFactory.newInstance();
+        }
+    }
+    
     private final static Gson GSON = new GsonBuilder()
             .registerTypeAdapterFactory(new RequiredKeyAdapterFactory())
             .create();
@@ -78,6 +90,14 @@ public class Corn {
         return parameters;
     }
 
+    public void setLog(boolean log) {
+        this.log = log;
+    }
+
+    public boolean isLog() {
+        return log;
+    }
+    
     public CSVObject csv(Object value) {
         createTaget();
         Map<String, Object> data = (Map<String, Object>) ScriptObjectMirror.wrapAsJSONCompatible(value, null);
@@ -98,7 +118,7 @@ public class Corn {
         JsonElement e = GSON.toJsonTree(data);
         XmlObjectInput input = GSON.fromJson(e, XmlObjectInput.class);
         if (input != null) {
-            XmlObject result = new XmlObject(input);
+            XmlObject result = new XmlObject(input, factory);
             Path path = result.generate(target);
             println("File: " + path + "\n");
             return result;
@@ -145,18 +165,18 @@ public class Corn {
                 Files.createDirectories(this.target);
             }
         } catch (Exception ex) {
-            throw new RuntimeException("Error creating the target directory: " + target);
+            throw new RuntimeException("Error creating the target directory: " + target, ex);
         }        
     }
     
     private void println(String value) {
         try {
-            if (engine != null) {
+            if (log && engine != null) {
                 engine.getContext().getWriter().write(value);
                 engine.getContext().getWriter().flush();
             }
         } catch (Exception ex) {
-            throw new RuntimeException("Error write the log message " + value);
+            throw new RuntimeException("Error write the log message " + value, ex);
         }
     }
     
