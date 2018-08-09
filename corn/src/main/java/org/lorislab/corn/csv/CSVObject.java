@@ -16,6 +16,8 @@
 package org.lorislab.corn.csv;
 
 import java.io.BufferedWriter;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
@@ -37,8 +39,14 @@ public class CSVObject implements List {
     }
 
     public Path generate(Path directory) {
+        Charset charset = StandardCharsets.UTF_8;
+        String tmp = input.definition.charset;
+        if (tmp != null && !tmp.isEmpty()) {
+            charset = Charset.forName(tmp);
+        }
+        
         Path path = directory.resolve(input.file);
-        try (BufferedWriter writer = Files.newBufferedWriter(path)) {
+        try (BufferedWriter writer = Files.newBufferedWriter(path, charset)) {
             if (input.definition.header) {
                 for (String col : input.definition.columns) {
                     writer.write(col);
