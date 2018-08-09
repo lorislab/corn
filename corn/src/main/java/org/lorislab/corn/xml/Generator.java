@@ -268,9 +268,6 @@ public class Generator {
                                     if (def != null) {
                                                                               
                                         Object val = def.get(term.getName());
-                                        if ("xxx".equals(val)) {
-                                            System.out.println(val);
-                                        }
                                         if (val != null) {
                                             if (val instanceof Map) {
                                                 Map<String, Object> definition = (Map<String, Object>) val;

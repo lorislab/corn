@@ -13,36 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.lorislab.corn.csv;
+package org.lorislab.corn.file;
 
 import java.util.List;
-import java.util.Map;
 import org.lorislab.corn.gson.Required;
 
-public class CSVObjectInput {
+public class FileObjectInput {
     
     @Required
     public String file;
     
     @Required
-    public CSVDefinition definition;
+    public FileDefinition definition;
     
-    public List<Map<String, Object>> data;
+    public List<String> data;
     
-    public static class CSVDefinition {
+    public static class FileDefinition {
+        
+        public String lineSeparator = "\n";
         
         public String version;
         
-        public boolean header;
-        
         public String charset;
         
-        public boolean newLine = true;
-        
-        @Required
-        public List<String> columns;
-        
-        @Required
-        public String separator;
     }
 }

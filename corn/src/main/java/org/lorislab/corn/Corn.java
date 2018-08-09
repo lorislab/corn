@@ -30,14 +30,22 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.script.ScriptEngine;
 import javax.xml.xpath.XPathFactory;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.lorislab.corn.csv.CSVObject;
 import org.lorislab.corn.csv.CSVObjectInput;
+import org.lorislab.corn.file.FileObject;
+import org.lorislab.corn.file.FileObjectInput;
 import org.lorislab.corn.gson.RequiredKeyAdapterFactory;
+import org.lorislab.corn.gzip.GzipObject;
+import org.lorislab.corn.gzip.GzipObjectInput;
 import org.lorislab.corn.xml.XmlObject;
 import org.lorislab.corn.xml.XmlObjectInput;
+import org.lorislab.corn.zip.ZipObject;
+import org.lorislab.corn.zip.ZipObjectInput;
 
 /**
  * The generator bean.
@@ -46,44 +54,40 @@ import org.lorislab.corn.xml.XmlObjectInput;
  */
 public class Corn {
 
+    private static final Logger LOG = Logger.getLogger(Corn.class.getName());
+    
     private Path target = Paths.get("target");
 
     private Map<String, Object> parameters = new HashMap<>();
 
-    private ScriptEngine engine;
-
     private static final Object LOCK = new Object();
-        
+
     private final XPathFactory factory;
 
     private boolean log = true;
-    
+
     public Corn() {
         synchronized (LOCK) {
             factory = XPathFactory.newInstance();
         }
     }
-    
+
     private final static Gson GSON = new GsonBuilder()
             .registerTypeAdapterFactory(new RequiredKeyAdapterFactory())
             .create();
-    
+
     public void setTarget(String target) {
         if (target != null && !target.isEmpty()) {
             this.target = Paths.get(target);
         }
     }
-    
+
     public void loadParameters(String name) {
         parameters = loadJson(name);
     }
-    
+
     public void setParameters(Map<String, Object> parameters) {
         this.parameters = parameters;
-    }
-    
-    public void setEngine(ScriptEngine engine) {
-        this.engine = engine;
     }
 
     public Map<String, Object> getParameters() {
@@ -97,16 +101,14 @@ public class Corn {
     public boolean isLog() {
         return log;
     }
-    
+
     public CSVObject csv(Object value) {
         createTaget();
-        Map<String, Object> data = (Map<String, Object>) ScriptObjectMirror.wrapAsJSONCompatible(value, null);
-        JsonElement e = GSON.toJsonTree(data);
-        CSVObjectInput input = GSON.fromJson(e, CSVObjectInput.class);
+        CSVObjectInput input = parseInput(value, CSVObjectInput.class);
         if (input != null) {
             CSVObject result = new CSVObject(input);
             Path path = result.generate(target);
-            println("File: " + path + "\n");
+            LOG.log(Level.INFO, "{0}", path);
             return result;
         }
         return null;
@@ -114,13 +116,47 @@ public class Corn {
 
     public XmlObject xml(Object value) {
         createTaget();
-        Map<String, Object> data = (Map<String, Object>) ScriptObjectMirror.wrapAsJSONCompatible(value, null);
-        JsonElement e = GSON.toJsonTree(data);
-        XmlObjectInput input = GSON.fromJson(e, XmlObjectInput.class);
+        XmlObjectInput input = parseInput(value, XmlObjectInput.class);
         if (input != null) {
             XmlObject result = new XmlObject(input, factory);
             Path path = result.generate(target);
-            println("File: " + path + "\n");
+            LOG.log(Level.INFO, "{0}", path);
+            return result;
+        }
+        return null;
+    }
+
+    public FileObject file(Object value) {
+        createTaget();
+        FileObjectInput input = parseInput(value, FileObjectInput.class);
+        if (input != null) {
+            FileObject result = new FileObject(input);
+            Path path = result.generate(target);
+            LOG.log(Level.INFO, "{0}", path);
+            return result;
+        }
+        return null;
+    }
+
+    public GzipObject gzip(Object value) {
+        createTaget();
+        GzipObjectInput input = parseInput(value, GzipObjectInput.class);
+        if (input != null) {
+            GzipObject result = new GzipObject(input);
+            Path path = result.generate(target);
+            LOG.log(Level.INFO, "{0}", path);
+            return result;
+        }
+        return null;
+    }
+
+    public ZipObject zip(Object value) {
+        createTaget();
+        ZipObjectInput input = parseInput(value, ZipObjectInput.class);
+        if (input != null) {
+            ZipObject result = new ZipObject(input);
+            Path path = result.generate(target);
+            LOG.log(Level.INFO, "{0}", path);
             return result;
         }
         return null;
@@ -166,20 +202,15 @@ public class Corn {
             }
         } catch (Exception ex) {
             throw new RuntimeException("Error creating the target directory: " + target, ex);
-        }        
-    }
-    
-    private void println(String value) {
-        try {
-            if (log && engine != null) {
-                engine.getContext().getWriter().write(value);
-                engine.getContext().getWriter().flush();
-            }
-        } catch (Exception ex) {
-            throw new RuntimeException("Error write the log message " + value, ex);
         }
     }
-    
+
+    public void println(String value) {
+        if (log) {
+            LOG.info(value);
+        }
+    }
+
     /**
      * Loads the corn configuration file.
      *
@@ -194,5 +225,48 @@ public class Corn {
         } catch (Exception ex) {
             throw new RuntimeException("Error loading the configuration file " + file, ex);
         }
+    }
+
+    public boolean mkdir(String file) {
+        boolean result = true;
+        try {
+            FileObject.mkdir(target, file);
+            LOG.log(Level.INFO, "{0}", file);
+        } catch (Exception ex) {
+            result = false;
+            LOG.log(Level.SEVERE, "Directory {0} could not be created. {1}", new Object[]{file, ex.getMessage()});
+        }
+        return result;
+    }
+    
+    public boolean delete(String file) {
+        boolean result = true;
+        try {
+            FileObject.delete(target, file);
+            LOG.log(Level.INFO, "{0}", file);
+        } catch (Exception ex) {
+            result = false;
+            LOG.log(Level.SEVERE, "File {0} could not be deleted. {1}", new Object[]{file, ex.getMessage()});
+        }
+        return result;
+    }
+
+    public boolean copy(String input, String output) {
+        boolean result = true;
+        try {
+            FileObject.copy(target, input, output);
+            LOG.log(Level.INFO, "{0} - {1}", new Object[]{input, output});
+        } catch (Exception ex) {
+            result = false;
+            LOG.log(Level.SEVERE, "File {0} could not be copied to {1} error: {2}", new Object[]{input, output, ex.getMessage()});
+        }
+        return result;
+    }
+
+    private static <T> T parseInput(Object value, Class<T> clazz) {
+        Map<String, Object> data = (Map<String, Object>) ScriptObjectMirror.wrapAsJSONCompatible(value, null);
+        JsonElement e = GSON.toJsonTree(data);
+        T result = GSON.fromJson(e, clazz);
+        return result;
     }
 }

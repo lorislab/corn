@@ -13,28 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.lorislab.corn.csv;
+package org.lorislab.corn.file;
 
-import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 
-public class CSVObject implements List {
+public class FileObject implements List {
 
-    private final CSVObjectInput input;
-    
-    public CSVObject(CSVObjectInput input) {
+    private final FileObjectInput input;
+
+    public FileObject(FileObjectInput input) {
         this.input = input;
     }
-    
-    public List<Map<String, Object>> getData() {
+
+    public List<String> getData() {
         return input.data;
     }
 
@@ -45,48 +48,21 @@ public class CSVObject implements List {
             charset = Charset.forName(tmp);
         }
         
+        boolean first = false;
+        
         Path path = directory.resolve(input.file);
-        try (BufferedWriter writer = Files.newBufferedWriter(path, charset)) {
-            if (input.definition.header) {
-                boolean first = false;
-                for (String col : input.definition.columns) {
+        if (input.data != null && !input.data.isEmpty()) {
+            try (OutputStreamWriter writer = new OutputStreamWriter(Files.newOutputStream(path), charset)) {
+                for (String line : input.data) {
                     if (first) {
-                        writer.write(input.definition.separator);
+                        writer.write(input.definition.lineSeparator);
                     }
-                    writer.write(col); 
+                    writer.write(line);
                     first = true;
                 }
-                writer.write('\n');
+            } catch (Exception ex) {
+                throw new RuntimeException("Error write file " + input.file, ex);
             }
-            
-            boolean line = false;
-            for (Map<String, Object> row : input.data) {
-                
-                if (line) {
-                    writer.write('\n');
-                }
-                
-                boolean first = false;
-                for (String col : input.definition.columns) {
-                    Object item = row.get(col);
-                    if (first) {
-                        writer.write(input.definition.separator);
-                    }                    
-                    if (item != null) {
-                        writer.write(item.toString());
-                    }
-                    first = true;
-                }
-                
-                line = true;
-            }
-            
-            if (input.definition.newLine) {
-                writer.write('\n');
-            }
-
-        } catch (Exception ex) {
-            throw new RuntimeException("Error write CSV file " + input.file, ex);
         }
         return path;
     }
@@ -94,11 +70,11 @@ public class CSVObject implements List {
     public int length() {
         return size();
     }
-    
+
     public int getLength() {
         return size();
     }
-    
+
     public int getSize() {
         return size();
     }
@@ -218,4 +194,79 @@ public class CSVObject implements List {
         return input.data.subList(fromIndex, toIndex);
     }
 
+    public static Path copy(Path directory, String file, String output) {
+        Path result = directory.resolve(output);
+        Path input = directory.resolve(file);
+        if (!Files.exists(input)) {
+            throw new RuntimeException("File " + file + " does not exists! ");
+        }
+        if (Files.isDirectory(result)) {
+            throw new RuntimeException("Result file " + output + " is directory!");
+        }
+        if (Files.exists(result)) {
+            throw new RuntimeException("Result file " + output + " exists! ");
+        }
+        try {
+            Files.copy(input, result);
+        } catch (Exception ex) {
+            throw new RuntimeException("Error delete directory " + result + " error: " + ex.getMessage(), ex);
+        }
+        return result;
+    }
+
+    public static Path mkdir(Path directory, String file) {
+        Path result = null;
+        Path path = directory.resolve(file);
+        if (Files.exists(path)) {
+            if (Files.isDirectory(path)) {
+                throw new RuntimeException("Directory " + path + " already exists!");
+            }
+            throw new RuntimeException("File " + path + " already exists!");
+        }   
+        
+        try {
+            result = Files.createDirectories(path);
+        } catch (Exception ex) {
+            throw new RuntimeException("Error create directory " + result + " error: " + ex.getMessage(), ex);
+        }        
+        return result;
+    }    
+
+    public static Path delete(Path directory, String file) {
+        Path result = directory.resolve(file);
+        return delete(result);
+    }
+    
+    public static Path delete(Path path) {
+        if (!Files.exists(path)) {
+            throw new RuntimeException("File " + path + " does not exists!");
+        }
+        if (Files.isDirectory(path)) {
+            try {
+                Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                        Files.delete(file);
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                    @Override
+                    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                        Files.delete(dir);
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                });
+            } catch (Exception ex) {
+                throw new RuntimeException("Error delete directory " + path + " error: " + ex.getMessage(), ex);
+            }
+        } else {
+            try {
+                Files.deleteIfExists(path);
+            } catch (Exception ex) {
+                throw new RuntimeException("Error delete file " + path + " error: " + ex.getMessage(), ex);
+            }
+        }
+        return path;
+    }
 }

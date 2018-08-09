@@ -18,6 +18,8 @@ package org.lorislab.corn;
 import com.google.gson.Gson;
 import java.io.FileReader;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -29,6 +31,8 @@ import javax.script.ScriptException;
  */
 public class CornExecutor {
 
+    private static final Logger LOG = Logger.getLogger(CornExecutor.class.getName());
+    
     public static void main(String[] args) throws Exception {
         String input = null;
         String target = UUID.randomUUID().toString();
@@ -51,12 +55,13 @@ public class CornExecutor {
         try {
             CornExecutor.execute(request, target);
         } catch (ScriptException ex) {
-            System.err.println("------------------------------------------------------------------------");
-            System.err.println("Script file: "  + ex.getFileName());
-            System.err.println("Column : "  + ex.getColumnNumber());
-            System.err.println("Line : "  + ex.getLineNumber());
-            System.err.println("Message : "  + ex.getMessage());
-            System.err.println("------------------------------------------------------------------------");
+            LOG.log(Level.INFO, "\n------------------------------------------------------------------------\n"
+                    + "Script file: {0}\n"
+                    + "Column : {1}\n"
+                    + "Line : {2}\n"
+                    + "Message : {3}\n"
+                    + "------------------------------------------------------------------------", 
+                    new Object[]{ex.getFileName(), ex.getColumnNumber(), ex.getLineNumber(), ex.getMessage()});
         }
     }
     
@@ -66,7 +71,6 @@ public class CornExecutor {
         ScriptEngine engine = mgr.getEngineByName("nashorn");
 
         Corn corn = new Corn();
-        corn.setEngine(engine);
         corn.setTarget(target);
 
         engine.put("corn", corn);

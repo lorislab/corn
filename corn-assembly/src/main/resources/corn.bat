@@ -23,4 +23,4 @@ goto setup
 
 IF NOT DEFINED JAVA_OPTS set JAVA_OPTS=
 
-java -cp "%CP%" %JAVA_OPTS% org.lorislab.corn.CornExecutor %CMD_LINE_ARGS%
+java -cp "%CP%" -Djava.util.logging.SimpleFormatter.format='%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS %4$-6s %2$s %5$s%6$s%n' %JAVA_OPTS% org.lorislab.corn.CornExecutor %CMD_LINE_ARGS%
