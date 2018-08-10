@@ -210,7 +210,7 @@ public class Corn {
      * @param file the file name.
      * @return the corresponding corn configuration.
      */
-    public Map<String, Object> loadJson(String file) {
+    public static Map<String, Object> loadJson(String file) {
         try (FileReader reader = new FileReader(file)) {
             Type type = new TypeToken<Map<String, Object>>() {
             }.getType();
@@ -219,7 +219,7 @@ public class Corn {
             throw new RuntimeException("Error loading the configuration file " + file, ex);
         }
     }
-
+    
     public boolean mkdir(String file) {
         boolean result = true;
         try {
