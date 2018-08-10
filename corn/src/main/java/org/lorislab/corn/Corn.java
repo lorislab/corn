@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.script.ScriptEngine;
 import javax.xml.xpath.XPathFactory;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.lorislab.corn.csv.CSVObject;
@@ -41,11 +40,9 @@ import org.lorislab.corn.file.FileObject;
 import org.lorislab.corn.file.FileObjectInput;
 import org.lorislab.corn.gson.RequiredKeyAdapterFactory;
 import org.lorislab.corn.gzip.GzipObject;
-import org.lorislab.corn.gzip.GzipObjectInput;
 import org.lorislab.corn.xml.XmlObject;
 import org.lorislab.corn.xml.XmlObjectInput;
 import org.lorislab.corn.zip.ZipObject;
-import org.lorislab.corn.zip.ZipObjectInput;
 
 /**
  * The generator bean.
@@ -138,26 +135,22 @@ public class Corn {
         return null;
     }
 
-    public GzipObject gzip(Object value) {
+    public String gzip(String input, String output) {
         createTaget();
-        GzipObjectInput input = parseInput(value, GzipObjectInput.class);
-        if (input != null) {
-            GzipObject result = new GzipObject(input);
-            Path path = result.generate(target);
+        if (input != null && output != null) {
+            Path path = GzipObject.generate(target, input, output);
             LOG.log(Level.INFO, "{0}", path);
-            return result;
+            return path.toString();
         }
         return null;
     }
 
-    public ZipObject zip(Object value) {
+    public String zip(String input, String output) {
         createTaget();
-        ZipObjectInput input = parseInput(value, ZipObjectInput.class);
-        if (input != null) {
-            ZipObject result = new ZipObject(input);
-            Path path = result.generate(target);
+        if (input != null && output != null) {
+            Path path = ZipObject.generate(target, input, output);
             LOG.log(Level.INFO, "{0}", path);
-            return result;
+            return path.toString();
         }
         return null;
     }

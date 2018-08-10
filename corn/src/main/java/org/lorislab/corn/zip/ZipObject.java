@@ -31,20 +31,14 @@ public class ZipObject {
 
     private static final Logger LOG = Logger.getLogger(ZipObject.class.getName());
     
-    private final ZipObjectInput input;
-
-    public ZipObject(ZipObjectInput input) {
-        this.input = input;
-    }
-
-    public Path generate(Path directory) {
-        Path result = directory.resolve(input.output);
-        Path path = directory.resolve(input.input);
+    public static Path generate(Path directory, String source, String target) {
+        Path result = directory.resolve(target);
+        Path path = directory.resolve(source);
         if (!Files.exists(path)) {
-            throw new RuntimeException("File " + input.input + " for zip does not exists!");
+            throw new RuntimeException("File " + source + " for zip does not exists!");
         }
         if (Files.exists(result)) {
-            throw new RuntimeException("Result file " + input.output + " exists! ");
+            throw new RuntimeException("Result file " + target + " exists! ");
         }        
         if (Files.isDirectory(path)) {
             createDiretoryZip(result, path, directory);
@@ -82,7 +76,7 @@ public class ZipObject {
     private static void addToZipFile(Path directory, Path file, ZipOutputStream zipStream) {
         String inputFileName = file.toFile().getPath();
         String name = directory.relativize(file).toString();
-        try (FileInputStream inputStream = new FileInputStream(inputFileName)) {
+        try {
 
             ZipEntry entry = new ZipEntry(name);
             entry.setCreationTime(FileTime.fromMillis(file.toFile().lastModified()));
@@ -90,14 +84,14 @@ public class ZipObject {
             zipStream.putNextEntry(entry);
 
             LOG.log(Level.FINE, "Generated new entry for: {0}", inputFileName);
-
-            byte[] readBuffer = new byte[2048];
-            int amountRead;
-            int written = 0;
-            while ((amountRead = inputStream.read(readBuffer)) > 0) {
-                zipStream.write(readBuffer, 0, amountRead);
-                written += amountRead;
-            }
+            long written = Files.copy(file, zipStream);
+//            byte[] readBuffer = new byte[2048];
+//            int amountRead;
+//            long written = 0;
+//            while ((amountRead = inputStream.read(readBuffer)) > 0) {
+//                zipStream.write(readBuffer, 0, amountRead);
+//                written += amountRead;
+//            }
             LOG.log(Level.FINE, "Stored {0} bytes to {1}", new Object[]{written, inputFileName});
 
         } catch (IOException e) {

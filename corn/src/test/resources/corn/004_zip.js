@@ -14,6 +14,15 @@ corn.mkdir("zip");
 corn.mkdir("zip/subdir");
 
 corn.file({
+    file: "fileTestZip0.txt",
+    data: data,
+    definition: {
+        version: "1"
+    }
+});
+corn.zip("fileTestZip0.txt","fileTestZip0.zip");
+
+corn.file({
     file: "zip/fileTestZip1.txt",
     data: data,
     definition: {
@@ -35,12 +44,6 @@ corn.file({
     }
 });
 
-corn.zip({
-    input: "zip/fileTestZip1.txt",
-    output: "fileTestZip.zip"
-});
+corn.zip("zip/fileTestZip1.txt", "fileTestZip.zip");
 
-corn.zip({
-    input: "zip",
-    output: "directory.zip"
-});
+corn.zip("zip","directory.zip");

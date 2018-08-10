@@ -15,51 +15,33 @@
  */
 package org.lorislab.corn.gzip;
 
-import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 
 public class GzipObject {
 
-    private final GzipObjectInput input;
-
-    public GzipObject(GzipObjectInput input) {
-        this.input = input;
-    }
-
-    public Path generate(Path directory) {
+    private static final Logger LOG = Logger.getLogger(GzipObject.class.getName());
+    
+    public static Path generate(Path directory, String input, String output) {
         
-        Path p = directory.resolve(input.input);
-        if (!Files.exists(p)) {
-            throw new RuntimeException("File " + input.input + " for gzip does not exists!");
+        Path inputFile = directory.resolve(input);
+        if (!Files.exists(inputFile)) {
+            throw new RuntimeException("File " + input + " for gzip does not exists!");
         }
-        if (Files.isDirectory(p)) {
-            throw new RuntimeException("File " + input.input + " for gzip is directory!");
+        if (Files.isDirectory(inputFile)) {
+            throw new RuntimeException("File " + input + " for gzip is directory!");
         }  
-        
-        Charset charsetInput = StandardCharsets.UTF_8;
-        Charset charsetOutput = StandardCharsets.UTF_8;
+        Path outputFile = directory.resolve(output);
 
-        if (input.definition.inputCharset != null && !input.definition.inputCharset.isEmpty()) {
-            charsetInput = Charset.forName(input.definition.inputCharset);
-        }
-        if (input.definition.outputCharset != null && !input.definition.outputCharset.isEmpty()) {
-            charsetOutput = Charset.forName(input.definition.outputCharset);
-        }
-
-        Path inputFile = directory.resolve(input.input);
-        Path outputFile = directory.resolve(input.output);
-
-        try (OutputStreamWriter writer = new OutputStreamWriter(new GZIPOutputStream(Files.newOutputStream(outputFile)), charsetOutput)) {
-            for (String line : Files.readAllLines(inputFile, charsetInput)) {
-                  writer.write(line);
-                  writer.write(input.definition.lineSeparator);
-            }           
+        try (GZIPOutputStream out = new GZIPOutputStream(Files.newOutputStream(outputFile))) {
+            long written = Files.copy(inputFile, out);
+            LOG.log(Level.FINE, "Stored {0} bytes to {1}", new Object[]{written, output});
         } catch (Exception ex) {
-            throw new RuntimeException("Error gzip file " + input.output + " from file " + input.input, ex);
+            throw new RuntimeException("Error gzip file " + output + " from file " + input, ex);
         }
         return outputFile;
     }

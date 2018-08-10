@@ -15,6 +15,7 @@
  */
 package org.lorislab.corn.file;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
@@ -52,7 +53,7 @@ public class FileObject implements List {
         
         Path path = directory.resolve(input.file);
         if (input.data != null && !input.data.isEmpty()) {
-            try (OutputStreamWriter writer = new OutputStreamWriter(Files.newOutputStream(path), charset)) {
+            try (BufferedWriter writer = Files.newBufferedWriter(path, charset)) {
                 for (String line : input.data) {
                     if (first) {
                         writer.write(input.definition.lineSeparator);

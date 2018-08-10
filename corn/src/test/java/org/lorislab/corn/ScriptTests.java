@@ -44,13 +44,19 @@ public class ScriptTests extends CommonTest {
         List<DynamicTest> tests = new ArrayList<>();
         stream.forEach(file -> tests.add(DynamicTest.dynamicTest(file.getFileName().toString(),
                 () -> {
-                    LOG.log(Level.INFO, "Start the test case for the script file: {0}", file.toString());
-                    String tmp = file.toString();
-                    Assertions.assertTrue(tmp.endsWith(".js"));
-                    tmp = tmp.replaceAll("\\\\", "/");
-                    CornRequest request = new CornRequest();
-                    request.setRun(tmp);
-                    CornExecutor.execute(request, TARGET);
+                    try {
+                        LOG.log(Level.INFO, "Start the test case for the script file: {0}", file.toString());
+                        String tmp = file.toString();
+                        Assertions.assertTrue(tmp.endsWith(".js"));
+                        tmp = tmp.replaceAll("\\\\", "/");
+                        CornRequest request = new CornRequest();
+                        request.setRun(tmp);
+                        CornExecutor.execute(request, TARGET);
+                    } catch (Exception ex) {
+                        LOG.log(Level.SEVERE, "Error executing the script test for the file {0}", file.toString());
+                        ex.printStackTrace();
+                        Assertions.assertNull(ex, "Error executing the script test for the file " + file.toString());
+                    }
                 }
         )));
         return tests;
