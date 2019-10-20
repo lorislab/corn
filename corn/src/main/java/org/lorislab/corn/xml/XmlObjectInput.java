@@ -60,7 +60,7 @@ public class XmlObjectInput {
         @SerializedName("xml_all_choices")
         public Boolean generateAllChoices;
 
-        @SerializedName("omitXmlDeclaration")
+        @SerializedName("omit_xml_declaration")
         public Boolean omitXmlDeclaration;
 
         @SerializedName("xml_optional_attributes")
