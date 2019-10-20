@@ -8,7 +8,7 @@ public class XmlMergeObject {
     public String file;
 
     @Required
-    public String addFile;
+    public String include;
 
     @Required
     public String replace;
