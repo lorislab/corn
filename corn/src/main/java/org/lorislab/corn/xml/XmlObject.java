@@ -161,7 +161,9 @@ public class XmlObject implements Map {
                 TransformerFactory tf = TransformerFactory.newInstance();
                 Transformer t = tf.newTransformer();
                 t.setOutputProperty(OutputKeys.INDENT, "yes");
-                t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+                if (config.omitXmlDeclaration) {
+                    t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+                }
                 t.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
                 t.transform(sc, new StreamResult(writer));
             } catch (Exception ex) {
