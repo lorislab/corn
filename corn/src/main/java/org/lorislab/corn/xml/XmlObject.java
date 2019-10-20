@@ -55,18 +55,21 @@ public class XmlObject implements Map {
         this.xPathFactory = factory;
         
         config = createGeneratorConfig(input.config);
+        xsdDefinition = getXSDDefinition(input);
+    }
 
+    public static XSDDefinition getXSDDefinition(XmlObjectInput input) {
         int code = 10;
         for (String s : input.definition.xsds) {
             code = code * 31 + s.hashCode();
         }
 
-        xsdDefinition = XSD_DEFINITIONS.get(code);
+        XSDDefinition xsdDefinition = XSD_DEFINITIONS.get(code);
         if (xsdDefinition == null) {
             xsdDefinition = new XSDDefinition(input.definition.xsds);
             XSD_DEFINITIONS.put(code, xsdDefinition);
         }
-
+        return xsdDefinition;
     }
 
     public Map<String, Object> getData() {
@@ -130,6 +133,9 @@ public class XmlObject implements Map {
         if (data.generateDefaultElementValues != null) {
             config.generateDefaultElementValues = data.generateDefaultElementValues;
         }
+        if (data.omitXmlDeclaration != null) {
+            config.omitXmlDeclaration = data.omitXmlDeclaration;
+        }
         return config;
     }
 
@@ -155,6 +161,7 @@ public class XmlObject implements Map {
                 TransformerFactory tf = TransformerFactory.newInstance();
                 Transformer t = tf.newTransformer();
                 t.setOutputProperty(OutputKeys.INDENT, "yes");
+                t.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
                 t.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
                 t.transform(sc, new StreamResult(writer));
             } catch (Exception ex) {

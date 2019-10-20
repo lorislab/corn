@@ -21,6 +21,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import java.io.FileReader;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -40,8 +41,7 @@ import org.lorislab.corn.file.FileObject;
 import org.lorislab.corn.file.FileObjectInput;
 import org.lorislab.corn.gson.RequiredKeyAdapterFactory;
 import org.lorislab.corn.gzip.GzipObject;
-import org.lorislab.corn.xml.XmlObject;
-import org.lorislab.corn.xml.XmlObjectInput;
+import org.lorislab.corn.xml.*;
 import org.lorislab.corn.zip.ZipObject;
 
 /**
@@ -97,6 +97,34 @@ public class Corn {
 
     public boolean isLog() {
         return log;
+    }
+
+    public void merge(Object value) {
+        XmlMergeObject input = parseInput(value, XmlMergeObject.class);
+        if (input != null) {
+            Path path = target.resolve(input.file);
+            Path addPath = target.resolve(input.addFile);
+            try {
+                String tmp = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+                String data = new String(Files.readAllBytes(addPath), StandardCharsets.UTF_8);
+                tmp = tmp.replace(input.replace, data);
+                Files.write(path, tmp.getBytes(StandardCharsets.UTF_8));
+            } catch (Exception ex) {
+                throw new RuntimeException("Error merge the files", ex);
+            }
+            LOG.log(Level.INFO, "Merge {0}", path);
+        }
+    }
+
+    public void validate(Object value) {
+        createTaget();
+        XmlObjectInput input = parseInput(value, XmlObjectInput.class);
+        if (input != null) {
+            Path path = target.resolve(input.file);
+            XSDDefinition xsdDefinition = XmlObject.getXSDDefinition(input);
+            XmlValidator.validate(path, xsdDefinition);
+            LOG.log(Level.INFO, "Validate {0}", path);
+        }
     }
 
     public CSVObject csv(Object value) {

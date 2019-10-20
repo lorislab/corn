@@ -26,6 +26,8 @@ public class GeneratorConfig {
     public String timeFormat = "HH:mm:ss";
     
     public boolean generateAllChoices = false;
+
+    public boolean omitXmlDeclaration = false;
     
     public Boolean generateOptionalAttributes = Boolean.TRUE;
 
