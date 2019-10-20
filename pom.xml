@@ -104,6 +104,11 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.lorislab.maven</groupId>
+                <artifactId>semver-release-maven-plugin</artifactId>
+                <version>0.4.0</version>
+            </plugin>
+            <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
             </plugin>
             <plugin>
