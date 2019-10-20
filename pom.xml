@@ -317,4 +317,18 @@
         </repository>
     </distributionManagement>
 
+    <repositories>
+        <repository>
+            <id>lorislab-repo</id>
+            <url>http://dl.bintray.com/lorislab/maven</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>   
+    
 </project>
