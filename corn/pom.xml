@@ -15,12 +15,13 @@
     
     <dependencies>
         <dependency>
-            <groupId>xerces</groupId>
-            <artifactId>xercesImpl</artifactId>
+            <groupId>dk.brics.automaton</groupId>
+            <artifactId>automaton</artifactId>
+            <version>1.11-8</version>
         </dependency>
         <dependency>
-            <groupId>nl.flotsam</groupId>
-            <artifactId>xeger</artifactId>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
         </dependency>
         <dependency>
             <groupId>wsdl4j</groupId>

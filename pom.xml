@@ -6,7 +6,7 @@
     <version>1.2.6-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>corn</name>
+    <name>corn-parent</name>
     <description>Data generator</description>
     <url>https://github.com/lorislab/corn</url>
     
@@ -45,7 +45,7 @@
     </scm>
     
     <modules>
-        <module>corn</module>
+        <module>corn</module>        
         <module>corn-assembly</module>
         <module>corn-service</module>
     </modules>
@@ -316,19 +316,5 @@
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
-
-    <repositories>
-        <repository>
-            <id>lorislab-repo</id>
-            <url>http://dl.bintray.com/lorislab/maven</url>
-            <layout>default</layout>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>   
     
 </project>
