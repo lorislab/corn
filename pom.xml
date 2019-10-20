@@ -35,15 +35,15 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com:lorislab/corn.git</connection>
-        <developerConnection>scm:git:git@github.com:lorislab/corn.git</developerConnection>
-        <url>https://github.com/lorislab/corn</url>
-        <tag>corn-parent-1.0.0</tag>
+        <connection>scm:git:git@github.com:lorislab-archived/corn.git</connection>
+        <developerConnection>scm:git:git@github.com:lorislab-archived/corn.git</developerConnection>
+        <url>https://github.com/lorislab-archived/corn</url>
     </scm>
     
     <modules>
         <module>corn</module>
         <module>corn-assembly</module>
+        <module>corn-service</module>
     </modules>
     
     <dependencyManagement>
@@ -103,6 +103,11 @@
     
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.lorislab.maven</groupId>
+                <artifactId>semver-release-maven-plugin</artifactId>
+                <version>0.4.0</version>
+            </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
             </plugin>
@@ -216,26 +221,12 @@
             </plugins>                                 
         </pluginManagement>
     </build>       
-            
+
     <distributionManagement>
         <repository>
-            <id>bintray</id>
-            <url>https://api.bintray.com/maven/lorislab/maven/corn</url>
+            <id>github</id>
+            <name>GitHub corn Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/lorislab/corn</url>
         </repository>
     </distributionManagement>
-                
-    <!-- Repositories -->
-    <repositories> 
-        <repository>
-            <id>lorislab</id>
-            <url>http://dl.bintray.com/lorislab/maven</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>		            
-    </repositories> 
-                    
 </project>

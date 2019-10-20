@@ -1,8 +1,13 @@
 
 # Cron 
 
-[![Build Status](https://travis-ci.org/lorislab/corn.svg?branch=master)](https://travis-ci.org/lorislab/corn)
-[![Download](https://api.bintray.com/packages/lorislab/maven/corn/images/download.svg) ](http://dl.bintray.com/lorislab/maven/org/lorislab/corn/corn-assembly/)
+### Create a release
 
+```bash
+mvn semver-release:release-create
+```
 
-Data generator
+### Create a patch branch
+```bash
+mvn semver-release:patch-create -DpatchVersion=x.x.0
+```
