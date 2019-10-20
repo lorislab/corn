@@ -103,7 +103,7 @@ public class Corn {
         XmlMergeObject input = parseInput(value, XmlMergeObject.class);
         if (input != null) {
             Path path = target.resolve(input.file);
-            Path addPath = target.resolve(input.addFile);
+            Path addPath = target.resolve(input.include);
             try {
                 String tmp = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
                 String data = new String(Files.readAllBytes(addPath), StandardCharsets.UTF_8);
