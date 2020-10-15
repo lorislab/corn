@@ -472,8 +472,10 @@ public class Generator {
         if (isAttribute(wildcard, parentData)) {
             doc.addAttribute(uri, "anyAttr", "anyValue");
         } else {
-            doc.startElement(uri, "anyElement");
-            addXSILocations();
+            if (config.generateDefaultAnyElement) {
+                doc.startElement(uri, "anyElement");
+                addXSILocations();
+            }
         }
     }
 

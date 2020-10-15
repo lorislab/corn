@@ -39,6 +39,8 @@ public class GeneratorConfig {
 
     public Boolean generateOptionalElements = Boolean.FALSE;
 
+    public Boolean generateDefaultAnyElement = Boolean.TRUE;
+
     public int maximumElementsGenerated = 0;
 
     public int minimumElementsGenerated = 1;
