@@ -39,9 +39,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com:lorislab-archived/corn.git</connection>
-        <developerConnection>scm:git:git@github.com:lorislab-archived/corn.git</developerConnection>
-        <url>https://github.com/lorislab-archived/corn</url>
+        <connection>scm:git:git@github.com:lorislab/corn.git</connection>
+        <developerConnection>scm:git:git@github.com:lorislab/corn.git</developerConnection>
+        <url>https://github.com/lorislab/corn</url>
     </scm>
     
     <modules>
@@ -60,7 +60,7 @@
             <dependency>
                 <groupId>xerces</groupId>
                 <artifactId>xercesImpl</artifactId>
-                <version>2.11.0</version>
+                <version>[2.12.0,)</version>
             </dependency>
             <dependency>
                 <groupId>nl.flotsam</groupId>
@@ -110,7 +110,7 @@
             <plugin>
                 <groupId>org.lorislab.maven</groupId>
                 <artifactId>semver-release-maven-plugin</artifactId>
-                <version>0.4.0</version>
+                <version>0.6.0</version>
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
