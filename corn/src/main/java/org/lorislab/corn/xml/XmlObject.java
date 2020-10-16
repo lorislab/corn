@@ -133,6 +133,9 @@ public class XmlObject implements Map {
         if (data.generateDefaultElementValues != null) {
             config.generateDefaultElementValues = data.generateDefaultElementValues;
         }
+        if (data.generateDefaultAnyElement != null) {
+            config.generateDefaultAnyElement = data.generateDefaultAnyElement;
+        }
         if (data.omitXmlDeclaration != null) {
             config.omitXmlDeclaration = data.omitXmlDeclaration;
         }

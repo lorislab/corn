@@ -92,6 +92,9 @@ public class XmlObjectInput {
 
         @SerializedName("xml_max_recursion_depth")
         public Integer maximumRecursionDepth;
+
+        @SerializedName("xml_any_element")
+        public Boolean generateDefaultAnyElement;
     }
 
 }
