@@ -349,7 +349,9 @@ public class Generator {
                         }
                     } else if (elem instanceof XSWildcard) {
                         if (!isAttribute((XSWildcard) elem, item.getParent().getData())) {
-                            doc.endElement();
+                            if (config.generateDefaultAnyElement) {
+                                doc.endElement();
+                            }
                         }
                     }
                 }
